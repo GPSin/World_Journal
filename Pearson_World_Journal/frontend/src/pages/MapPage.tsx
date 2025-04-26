@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import L, { LatLngExpression, LeafletMouseEvent, Icon } from 'leaflet';
 import styles from './MapPage.module.css';
+import './global.css';
 
 interface Waypoint {
   _id: string;
@@ -34,6 +35,7 @@ export default function MapPage() {
   const [editingWaypoint, setEditingWaypoint] = useState<Waypoint | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditingMode, setIsEditingMode] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
   const [formData, setFormData] = useState<{ title: string; description: string; imageFile: File | null }>({
     title: '',
     description: '',
@@ -135,9 +137,31 @@ export default function MapPage() {
 
   return (
     <>
+      {showInstructions && (
+        <div className={styles.instructionsContainer}>
+          <div className={styles.instructionBox}>
+            Double-click on the map to add a new waypoint.
+            <br />
+            <br />
+            Right-click on a waypoint to delete it.
+          </div>
+
+          <div className={styles.instructionBox}>
+            Edit Mode: Edit Mode is a toggleable feature so don't forget to turn it off when you are done.
+            <br />
+            <br />
+            In Edit Mode: Left-Click and hold to Drag waypoints to move them to a new location, or left-click waypoints to edit their details.
+          </div>
+        </div>
+      )}
+      <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
+        {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
+      </button>
+
       <button className={`${styles.fixedButton} ${styles.editButtonFixed}`} onClick={() => setIsEditingMode(prev => !prev)}>
         {isEditingMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
       </button>
+      
       <button className={`${styles.fixedButton} ${styles.viewButtonFixed}`} onClick={() => navigate('/view-waypoints')}>
         View Waypoints
       </button>
@@ -179,12 +203,25 @@ export default function MapPage() {
             }}
           >
             <Tooltip direction="top" offset={[0, -30]} opacity={1} permanent={false}>
-              <div>
+              <div
+                style={{
+                  minWidth: '200px',
+                  backgroundColor: '#2F3C7E',
+                  color: '#FBEAEB',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  fontSize: '1.4em',
+                }}
+              >
                 {wp.image && (
                   <img
                     src={wp.image}
                     alt="Preview"
-                    style={{ width: '100px', borderRadius: '5px' }}
+                    style={{
+                      width: '150px',
+                      borderRadius: '5px',
+                      marginBottom: '5px',
+                    }}
                   />
                 )}
                 <div><strong>{wp.title}</strong></div>
@@ -192,17 +229,36 @@ export default function MapPage() {
               </div>
             </Tooltip>
             <Popup>
-              <div style={{ maxWidth: '200px' }}>
+              <div
+                style={{
+                  minWidth: '200px',
+                  backgroundColor: '#2F3C7E',
+                  color: '#FBEAEB',
+                  padding: '10px',
+                  borderRadius: '10px',
+                  fontSize: '1.4em',
+                }}
+              >
                 {wp.image && (
                   <img
                     src={wp.image}
                     alt="Waypoint"
-                    style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
+                    style={{
+                      width: '100%',
+                      borderRadius: '8px',
+                      marginBottom: '0.5em'
+                    }}
                   />
                 )}
-                {wp.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>}
-                {wp.description && <p style={{ margin: '0 0 0.5em' }}>{wp.description}</p>}
-                <a href={`/journal/${wp._id}`}>View Journal</a>
+                {wp.title && (
+                  <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>
+                )}
+                {wp.description && (
+                  <p style={{ margin: '0 0 0.5em' }}>{wp.description}</p>
+                )}
+                <a href={`/journal/${wp._id}`} style={{ color: '#FBEAEB', textDecoration: 'underline' }}>
+                  View Journal
+                </a>
               </div>
             </Popup>
           </Marker>

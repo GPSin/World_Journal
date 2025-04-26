@@ -10,13 +10,31 @@ const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
 const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads')
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/'); // Make sure the 'uploads' folder exists
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
-    }
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
 });
+
+const uploadDirs = ['uploads', 'deleted_uploads'];
+uploadDirs.forEach((dir) => {
+  const fullPath = path.join(__dirname, dir);
+  if (!fs.existsSync(fullPath)) {
+    fs.mkdirSync(fullPath, { recursive: true });
+    console.log(`✅ Created folder: ${dir}`);
+  }
+});
+
+// Ensure waypoints.js exists, or copy from template
+const waypointFile = path.join(__dirname, 'waypoints.json');
+const waypointTemplate = path.join(__dirname, 'waypoints.template.json');
+
+if (!fs.existsSync(waypointFile)) {
+  fs.copyFileSync(waypointTemplate, waypointFile);
+  console.log('✅ Created waypoints.json from template');
+}
 
 const upload = multer({
   storage: multer.diskStorage({
