@@ -11,8 +11,10 @@
 # production
 /build
 
-/uploads
-/deleted_uploads
+backend/uploads
+backend/deleted_uploads
+
+backend/waypoints.json
 
 # misc
 .DS_Store
