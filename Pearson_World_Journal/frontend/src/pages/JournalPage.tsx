@@ -20,6 +20,8 @@ export default function JournalPage() {
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
 
   type FilePreview = {
     file: File;
@@ -40,17 +42,63 @@ export default function JournalPage() {
     });
   }, [id]);
 
+  useEffect(() => {
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && pendingDeletes.length) {
+        e.preventDefault();
+        e.returnValue = '';
+  
+        // Try to restore deleted images
+        for (const imageUrl of pendingDeletes) {
+          try {
+            await axios.post('/api/restore-image', { imageUrl });
+          } catch (err) {
+            console.warn('Failed to restore image on unload:', imageUrl);
+          }
+        }
+      }
+    };
+  
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, pendingDeletes]);
+   
+
   // Save journal entry and images to the API
-  const handleSave = () => {
-    axios.put(`/api/waypoints/${id}`, {
-      journalText,
-      images
-    }).then(() => {
+  const handleSave = async () => {
+    setUploading(true);
+    try {
+      let uploadedImages: string[] = [];
+  
+      if (filePreviews.length) {
+        const formData = new FormData();
+        filePreviews.forEach(fp => formData.append('images', fp.file));
+  
+        const res = await axios.post('/api/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+  
+        uploadedImages = res.data.urls;
+      }
+  
+      const allImages = [...images, ...uploadedImages];
+  
+      await axios.put(`/api/waypoints/${id}`, {
+        journalText,
+        images: allImages
+      });
+  
+      setImages(allImages);
+      setFilePreviews([]);
+      setHasUnsavedChanges(false);
       alert('Saved!');
-    }).catch((err) => {
+    } catch (err: any) {
       alert('Error saving: ' + err.message);
-    });
-  };
+    } finally {
+      setPendingDeletes([]);
+      setUploading(false);
+    }
+  };  
 
   // Handle file selection and preview generation
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,46 +113,53 @@ export default function JournalPage() {
   };
 
 
-  // Handle file upload to server
-  const handleFileUpload = async () => {
-    if (!filePreviews.length) return;
-  
-    const formData = new FormData();
-    filePreviews.forEach(fp => formData.append('images', fp.file));
-  
-    setUploading(true);
-    try {
-      const res = await axios.post('/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-  
-      // Update the list of images with the URLs from the server
-      const uploadedImages = res.data.urls;
-      setImages(prev => [...prev, ...uploadedImages]);
-  
-      // Clear file previews after upload
-      setFilePreviews([]); // <-- NEW: Clear the new `filePreviews`
-    } catch (err: any) {
-      console.error('Upload error:', err);
-      alert('Upload failed: ' + (err.response?.data?.message || err.message || 'Unknown error'));
-    } finally {
-      setUploading(false);
-    }
-  };  
-
   // Delete an image from the server and the local state
   const handleImageDelete = async (imageUrl: string, index: number) => {
     try {
       await axios.delete('/api/delete-image', { data: { imageUrl } });
+  
       setImages(prev => prev.filter((_, i) => i !== index));
+      setPendingDeletes(prev => [...prev, imageUrl]); // 👈 store it for possible restore
+      setHasUnsavedChanges(true);
     } catch (err: any) {
       alert('Failed to delete the image.');
       console.error('Error deleting image:', err);
     }
   };
+  
 
   const handlePreviewDelete = (index: number) => {
     setFilePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  const handleReturnToMap = async () => {
+    if (hasUnsavedChanges && pendingDeletes.length) {
+      const confirmLeave = window.confirm(
+        'You have unsaved changes. If you return to the map now, deleted images will be restored.'
+      );
+  
+      if (!confirmLeave) return;
+  
+      // Restore any deleted images
+      for (const imageUrl of pendingDeletes) {
+        try {
+          await fetch('/api/restore-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageUrl }),
+          });
+        } catch (err) {
+          console.warn('Failed to restore image:', imageUrl);
+        }
+      }
+    }
+  
+    navigate('/');
+    setPendingDeletes([]);
+    setHasUnsavedChanges(false);
+
   };  
   
   if (!waypoint) return <p>Loading...</p>;
@@ -142,11 +197,11 @@ export default function JournalPage() {
         ))}
       </div>
 
-      <h4>Preview Images (Before Uploading):</h4>
+      <h4>Preview Images:</h4>
       <div className={styles.uploadedImages}>
         {filePreviews.map((fp, i) => (
           <div key={i} className={styles.imageWrapper}>
-            <img src={fp.previewUrl} alt={`preview-${i}`} className={styles.image} />
+            <img src={fp.previewUrl} alt={`preview-${i}`} className={styles.image} onClick={() => setZoomedImage(fp.previewUrl)} />
             <button onClick={() => handlePreviewDelete(i)} className={styles.deleteButton}>×</button>
           </div>
         ))}
@@ -164,20 +219,16 @@ export default function JournalPage() {
         multiple
         className={styles.hiddenFileInput}
       />
-        <button
-          onClick={handleFileUpload}
-          disabled={!filePreviews.length || uploading}
-          className={styles.button}
-        >
-          {uploading ? 'Uploading...' : 'Upload Images'}
-        </button>
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
         <button className={`${styles.button} ${styles.mapButton}`} onClick={handleSave}>
           Save Journal
         </button>
-        <button className={`${styles.button} ${styles.mapButton}`} onClick={() => navigate('/')}>
+        <button
+          className={`${styles.button} ${styles.mapButton}`}
+          onClick={handleReturnToMap}
+        >
           Return to Map
         </button>
       </div>

@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "_id": "19a0b1e1-6b99-49e9-9f02-b9bb99f05054",
+    "lat": 26.43122806450644,
+    "lng": -47.109375,
+    "title": "asdasd",
+    "description": "asdasd",
+    "image": "/uploads/1745650716907-Ivara WP.jpg",
+    "images": [
+      "/uploads/1745650726340-bunny.jpg",
+      "/uploads/1745650726345-cat.jpg",
+      "/uploads/1745650726346-squirrel.jpg",
+      "/uploads/1745650726360-bird.JPG"
+    ],
+    "journalText": "asdasd"
+  }
+]

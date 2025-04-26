@@ -7,6 +7,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
+const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads')
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -36,6 +37,10 @@ const upload = multer({
   },
 });
 
+if (!fs.existsSync(DELETED_UPLOADS_DIR)) {
+  fs.mkdirSync(DELETED_UPLOADS_DIR);
+  console.log('✅ Created deleted_uploads folder');
+}
 
 const app = express();
 
@@ -168,24 +173,76 @@ app.post('/api/upload', upload.array('images', 10), (req, res) => {
 
 // Endpoint to handle image deletion
 app.delete('/api/delete-image', (req, res) => {
-    const { imageUrl } = req.body;
-    
-    if (!imageUrl) {
-      return res.status(400).json({ message: 'Image URL is required' });
+  const { imageUrl } = req.body;
+
+  if (!imageUrl) {
+    return res.status(400).json({ message: 'Image URL is required' });
+  }
+
+  const fileName = path.basename(imageUrl);
+  const sourcePath = path.join(__dirname, 'uploads', fileName);
+  const destPath = path.join(DELETED_UPLOADS_DIR, fileName);
+
+  fs.rename(sourcePath, destPath, (err) => {
+    if (err) {
+      console.error('Error moving image to deleted_uploads:', err);
+      return res.status(500).json({ message: 'Failed to move image' });
     }
-  
-    // Assuming the images are stored in the 'uploads' folder on the server
-    const imagePath = path.join(__dirname, 'uploads', path.basename(imageUrl)); // Extract file name from URL and construct full path
-  
-    // Delete the file from the server
-    fs.unlink(imagePath, (err) => {
-      if (err) {
-        console.error('Error deleting image:', err);
-        return res.status(500).json({ message: 'Failed to delete image' });
+
+    console.log('Moved to deleted_uploads:', fileName);
+    res.status(200).json({ message: 'Image moved successfully' });
+  });
+});
+
+app.post('/api/restore-image', (req, res) => {
+  const { imageUrl } = req.body;
+
+  if (!imageUrl) {
+    return res.status(400).json({ message: 'Image URL is required' });
+  }
+
+  const fileName = path.basename(imageUrl);
+  const sourcePath = path.join(DELETED_UPLOADS_DIR, fileName);
+  const destPath = path.join(__dirname, 'uploads', fileName);
+
+  fs.rename(sourcePath, destPath, (err) => {
+    if (err) {
+      console.error('Error restoring image from deleted_uploads:', err);
+      return res.status(500).json({ message: 'Failed to restore image' });
+    }
+
+    console.log('Restored image:', fileName);
+    res.status(200).json({ message: 'Image restored successfully' });
+  });
+});
+
+const cron = require('node-cron');
+
+function isFileOlderThan(filePath, days) {
+  const stats = fs.statSync(filePath);
+  const now = new Date();
+  const modifiedTime = new Date(stats.mtime);
+  const ageInDays = (now - modifiedTime) / (1000 * 60 * 60 * 24);
+  return ageInDays > days;
+}
+
+// Run cleanup daily at 2am
+cron.schedule('0 2 * * *', () => {
+  const deletedFolder = path.join(__dirname, 'deleted');
+  fs.readdir(deletedFolder, (err, files) => {
+    if (err) return console.error('Cleanup failed:', err);
+
+    files.forEach(file => {
+      const filePath = path.join(deletedFolder, file);
+      if (isFileOlderThan(filePath, 7)) {
+        fs.unlink(filePath, err => {
+          if (err) console.error('Error deleting file:', filePath, err);
+          else console.log('🧹 Deleted old image:', filePath);
+        });
       }
-  
-      res.status(200).json({ message: 'Image deleted successfully' });
     });
   });
+});
+
 
 app.listen(3001, () => console.log("Server running on http://localhost:3001"));

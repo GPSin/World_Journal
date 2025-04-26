@@ -58,3 +58,23 @@
   transform: translateY(-5px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+
+.fixedButton {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  background-color: #2F3C7E;
+  color: #FBEAEB;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  min-width: 160px;
+  text-align: center;
+}
+
+.fixedButton:hover {
+  background-color: #0056b3;
+}

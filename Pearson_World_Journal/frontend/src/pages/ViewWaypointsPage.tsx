@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './ViewWaypointsPage.module.css';
+import { useNavigate } from 'react-router-dom';
+
 
 interface Waypoint {
   _id: string;
@@ -12,7 +14,8 @@ interface Waypoint {
 }
 
 const ViewWaypointsPage = () => {
-  const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
+const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
+const navigate = useNavigate();
 
   useEffect(() => {
     fetch('http://localhost:3001/api/waypoints')
@@ -23,6 +26,9 @@ const ViewWaypointsPage = () => {
 
   return (
     <div className={styles['waypoints-container']}>
+      <button className={`${styles.fixedButton}`} onClick={() => navigate('/')}>
+        Return to Map
+      </button>
         <h1>All Waypoints</h1>
         <div className={styles['waypoints-grid']}>
             {waypoints.map((waypoint) => (
