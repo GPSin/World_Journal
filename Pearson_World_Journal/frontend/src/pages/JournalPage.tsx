@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from './api';
 import styles from './JournalPage.module.css'; // Import CSS Module
 
 interface Waypoint {
@@ -33,7 +33,7 @@ export default function JournalPage() {
 
   // Fetch waypoint data from API
   useEffect(() => {
-    axios.get(`/api/waypoints`).then(res => {
+    API.get(`/api/waypoints`).then(res => {
       const wp = res.data.find((w: Waypoint) => w._id === id);
       if (wp) {
         setWaypoint(wp);
@@ -52,7 +52,7 @@ export default function JournalPage() {
         // Try to restore deleted images
         for (const imageUrl of pendingDeletes) {
           try {
-            await axios.post('/api/restore-image', { imageUrl });
+            await API.post('/api/restore-image', { imageUrl });
           } catch (err) {
             console.warn('Failed to restore image on unload:', imageUrl);
           }
@@ -75,7 +75,7 @@ export default function JournalPage() {
         const formData = new FormData();
         filePreviews.forEach(fp => formData.append('images', fp.file));
   
-        const res = await axios.post('/api/upload', formData, {
+        const res = await API.post('/api/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
   
@@ -84,7 +84,7 @@ export default function JournalPage() {
   
       const allImages = [...images, ...uploadedImages];
   
-      await axios.put(`/api/waypoints/${id}`, {
+      await API.put(`/api/waypoints/${id}`, {
         journalText,
         images: allImages
       });
@@ -117,7 +117,7 @@ export default function JournalPage() {
   // Delete an image from the server and the local state
   const handleImageDelete = async (imageUrl: string, index: number) => {
     try {
-      await axios.delete('/api/delete-image', { data: { imageUrl } });
+      await API.delete('/api/delete-image', { data: { imageUrl } });
   
       setImages(prev => prev.filter((_, i) => i !== index));
       setPendingDeletes(prev => [...prev, imageUrl]); // 👈 store it for possible restore

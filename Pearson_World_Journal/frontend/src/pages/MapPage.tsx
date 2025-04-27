@@ -3,7 +3,7 @@ import {
 } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import axios from 'axios';
+import API from './api';
 import { useNavigate } from 'react-router-dom';
 import L, { LatLngExpression, LeafletMouseEvent, Icon } from 'leaflet';
 import styles from './MapPage.module.css';
@@ -43,7 +43,7 @@ export default function MapPage() {
   });
 
   useEffect(() => {
-    axios.get('/api/waypoints').then(res => setWaypoints(res.data));
+    API.get('/api/waypoints').then(res => setWaypoints(res.data));
   }, []);
 
   const AddWaypoint = () => {
@@ -68,7 +68,7 @@ export default function MapPage() {
     if (formData.imageFile) {
       const uploadData = new FormData();
       uploadData.append('images', formData.imageFile);
-      const res = await axios.post('/api/upload', uploadData, {
+      const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       imageUrl = res.data.urls?.[0];
@@ -81,7 +81,7 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
-      await axios.put(`/api/waypoints/${editingWaypoint._id}`, updated);
+      await API.put(`/api/waypoints/${editingWaypoint._id}`, updated);
       setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
     } else if (newWaypoint) {
       const newWp = {
@@ -90,7 +90,7 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
-      const res = await axios.post('/api/waypoints', newWp);
+      const res = await API.post('/api/waypoints', newWp);
       setWaypoints(prev => [...prev, res.data]);
     }
 
@@ -117,7 +117,7 @@ export default function MapPage() {
     const marker = e.target;
     const newPos = marker.getLatLng();
     const updated = { ...wp, lat: newPos.lat, lng: newPos.lng };
-    await axios.put(`/api/waypoints/${wp._id}`, updated);
+    await API.put(`/api/waypoints/${wp._id}`, updated);
     setWaypoints(prev => prev.map(w => w._id === wp._id ? updated : w));
   };
 
@@ -193,7 +193,7 @@ export default function MapPage() {
               contextmenu: () => {
                 // eslint-disable-next-line no-restricted-globals
                 if (confirm('Delete this waypoint?')) {
-                  axios.delete(`/api/waypoints/${wp._id}`).then(() => {
+                  API.delete(`/api/waypoints/${wp._id}`).then(() => {
                     setWaypoints(prev => prev.filter(p => p._id !== wp._id));
                   });
                 }
