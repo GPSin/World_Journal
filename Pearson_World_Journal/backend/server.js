@@ -5,34 +5,58 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const cron = require('node-cron');
+
 const app = express();
 
 const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
+const WAYPOINTS_TEMPLATE = path.join(__dirname, 'waypoints.template.json');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads');
 const PORT = process.env.PORT || 3001;
 
-const uploadDirs = ['uploads', 'deleted_uploads'];
-uploadDirs.forEach((dir) => {
-  const fullPath = path.join(__dirname, dir);
-  if (!fs.existsSync(fullPath)) {
-    fs.mkdirSync(fullPath, { recursive: true });
+// Ensure required folders exist
+[UPLOADS_DIR, DELETED_UPLOADS_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
     console.log(`✅ Created folder: ${dir}`);
   }
 });
 
-// Ensure waypoints.js exists, or copy from template
-const waypointFile = path.join(__dirname, 'waypoints.json');
-const waypointTemplate = path.join(__dirname, 'waypoints.template.json');
-
-if (!fs.existsSync(waypointFile)) {
-  fs.copyFileSync(waypointTemplate, waypointFile);
-  console.log('✅ Created waypoints.json from template');
+// Ensure waypoints.json exists (from template or empty array)
+if (!fs.existsSync(WAYPOINTS_FILE)) {
+  if (fs.existsSync(WAYPOINTS_TEMPLATE)) {
+    fs.copyFileSync(WAYPOINTS_TEMPLATE, WAYPOINTS_FILE);
+    console.log('✅ Created waypoints.json from template');
+  } else {
+    fs.writeFileSync(WAYPOINTS_FILE, '[]', 'utf-8');
+    console.log('✅ Created empty waypoints.json');
+  }
 }
 
+// Load waypoints
+function loadWaypoints() {
+  try {
+    const data = fs.readFileSync(WAYPOINTS_FILE, 'utf-8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error('Failed to load waypoints:', err);
+    return [];
+  }
+}
+
+// Save waypoints
+function saveWaypoints(data) {
+  fs.writeFileSync(WAYPOINTS_FILE, JSON.stringify(data, null, 2));
+}
+
+let waypoints = loadWaypoints();
+
+// Multer upload setup
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'uploads/');
+      cb(null, UPLOADS_DIR);
     },
     filename: (req, file, cb) => {
       cb(null, Date.now() + '-' + file.originalname);
@@ -48,42 +72,20 @@ const upload = multer({
   },
 });
 
-if (!fs.existsSync(DELETED_UPLOADS_DIR)) {
-  fs.mkdirSync(DELETED_UPLOADS_DIR);
-  console.log('✅ Created deleted_uploads folder');
-}
-
-// Ensure waypoints.json exists
-if (!fs.existsSync(WAYPOINTS_FILE)) {
-  fs.writeFileSync(WAYPOINTS_FILE, '[]', 'utf-8');
-  console.log('✅ Created empty waypoints.json');
-}
-
-// Load waypoints from JSON file
-function loadWaypoints() {
-  try {
-    const data = fs.readFileSync(WAYPOINTS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Failed to load waypoints:', err);
-    return [];
-  }
-}
-
-// Save waypoints to JSON file
-function saveWaypoints(data) {
-  fs.writeFileSync(WAYPOINTS_FILE, JSON.stringify(data, null, 2));
-}
-
-let waypoints = loadWaypoints();
-
+// Middleware
 app.use(cors({
   origin: 'https://world-journal.vercel.app',
   credentials: true,
 }));
-
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Serve a simple homepage for root URL
+app.get('/', (req, res) => {
+  res.send('🌍 World Journal API is running!');
+});
+
+// API routes
 
 // Get all waypoints
 app.get('/api/waypoints', (req, res) => {
@@ -93,14 +95,14 @@ app.get('/api/waypoints', (req, res) => {
 // Add a new waypoint
 app.post('/api/waypoints', (req, res) => {
   const { lat, lng, title, description, image } = req.body;
-  const newWaypoint = { 
+  const newWaypoint = {
     _id: uuidv4(),
     lat,
     lng,
     title: title || '',
     description: description || '',
     image: image || '',
-    images: [] // keep the images array if you want
+    images: [],
   };
   waypoints.push(newWaypoint);
   saveWaypoints(waypoints);
@@ -115,21 +117,22 @@ app.delete('/api/waypoints/:id', (req, res) => {
   if (index !== -1) {
     const waypoint = waypoints[index];
 
-    // 🆕 Delete associated image(s) if they exist
+    // Delete single image if exists
     if (waypoint.image) {
-      const imagePath = path.join(__dirname, 'uploads', path.basename(waypoint.image));
+      const imagePath = path.join(UPLOADS_DIR, path.basename(waypoint.image));
       fs.unlink(imagePath, err => {
         if (err) console.error('Failed to delete image:', err.message);
-        else console.log('Deleted image:', imagePath);
+        else console.log('🗑️ Deleted image:', imagePath);
       });
     }
 
+    // Delete multiple images if exist
     if (Array.isArray(waypoint.images)) {
       waypoint.images.forEach(imageUrl => {
-        const imagePath = path.join(__dirname, 'uploads', path.basename(imageUrl));
+        const imagePath = path.join(UPLOADS_DIR, path.basename(imageUrl));
         fs.unlink(imagePath, err => {
           if (err) console.error('Failed to delete image:', err.message);
-          else console.log('Deleted image:', imagePath);
+          else console.log('🗑️ Deleted image:', imagePath);
         });
       });
     }
@@ -149,18 +152,15 @@ app.put('/api/waypoints/:id', (req, res) => {
   const waypoint = waypoints.find(wp => wp._id === id);
 
   if (waypoint) {
-    // Check if the image is being updated
     if (updatedData.image && updatedData.image !== waypoint.image) {
       if (waypoint.image) {
-        const oldImagePath = path.join(__dirname, 'uploads', path.basename(waypoint.image));
+        const oldImagePath = path.join(UPLOADS_DIR, path.basename(waypoint.image));
         fs.unlink(oldImagePath, err => {
           if (err) console.error('Failed to delete old image:', err.message);
-          else console.log('Deleted old image:', oldImagePath);
+          else console.log('🗑️ Deleted old image:', oldImagePath);
         });
       }
     }
-
-    // Apply updates
     Object.assign(waypoint, updatedData);
     saveWaypoints(waypoints);
     res.json(waypoint);
@@ -169,66 +169,55 @@ app.put('/api/waypoints/:id', (req, res) => {
   }
 });
 
-// Handle multiple file uploads
+// Upload multiple images
 app.post('/api/upload', upload.array('images', 10), (req, res) => {
-    // Assuming 'images' is the name field for the uploaded files
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).send('No files uploaded.');
-    }
-  
-    // Map the uploaded files to URLs (you can adjust the URL generation as per your setup)
-    const fileUrls = req.files.map(file => `/uploads/${file.filename}`);
-  
-    res.json({ urls: fileUrls });
-});
-
-// Endpoint to handle image deletion
-app.delete('/api/delete-image', (req, res) => {
-  const { imageUrl } = req.body;
-
-  if (!imageUrl) {
-    return res.status(400).json({ message: 'Image URL is required' });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).send('No files uploaded.');
   }
 
+  const fileUrls = req.files.map(file => `/uploads/${file.filename}`);
+  res.json({ urls: fileUrls });
+});
+
+// Delete uploaded image (move to deleted_uploads)
+app.delete('/api/delete-image', (req, res) => {
+  const { imageUrl } = req.body;
+  if (!imageUrl) return res.status(400).json({ message: 'Image URL is required' });
+
   const fileName = path.basename(imageUrl);
-  const sourcePath = path.join(__dirname, 'uploads', fileName);
+  const sourcePath = path.join(UPLOADS_DIR, fileName);
   const destPath = path.join(DELETED_UPLOADS_DIR, fileName);
 
   fs.rename(sourcePath, destPath, (err) => {
     if (err) {
-      console.error('Error moving image to deleted_uploads:', err);
+      console.error('Error moving image:', err);
       return res.status(500).json({ message: 'Failed to move image' });
     }
-
-    console.log('Moved to deleted_uploads:', fileName);
+    console.log('Moved image to deleted_uploads:', fileName);
     res.status(200).json({ message: 'Image moved successfully' });
   });
 });
 
+// Restore deleted image
 app.post('/api/restore-image', (req, res) => {
   const { imageUrl } = req.body;
-
-  if (!imageUrl) {
-    return res.status(400).json({ message: 'Image URL is required' });
-  }
+  if (!imageUrl) return res.status(400).json({ message: 'Image URL is required' });
 
   const fileName = path.basename(imageUrl);
   const sourcePath = path.join(DELETED_UPLOADS_DIR, fileName);
-  const destPath = path.join(__dirname, 'uploads', fileName);
+  const destPath = path.join(UPLOADS_DIR, fileName);
 
   fs.rename(sourcePath, destPath, (err) => {
     if (err) {
-      console.error('Error restoring image from deleted_uploads:', err);
+      console.error('Error restoring image:', err);
       return res.status(500).json({ message: 'Failed to restore image' });
     }
-
     console.log('Restored image:', fileName);
     res.status(200).json({ message: 'Image restored successfully' });
   });
 });
 
-const cron = require('node-cron');
-
+// 🧹 Cleanup old files in deleted_uploads folder
 function isFileOlderThan(filePath, days) {
   const stats = fs.statSync(filePath);
   const now = new Date();
@@ -237,17 +226,15 @@ function isFileOlderThan(filePath, days) {
   return ageInDays > days;
 }
 
-// Run cleanup daily at 2am
 cron.schedule('0 2 * * *', () => {
-  const deletedFolder = path.join(__dirname, 'deleted');
-  fs.readdir(deletedFolder, (err, files) => {
+  fs.readdir(DELETED_UPLOADS_DIR, (err, files) => {
     if (err) return console.error('Cleanup failed:', err);
 
     files.forEach(file => {
-      const filePath = path.join(deletedFolder, file);
+      const filePath = path.join(DELETED_UPLOADS_DIR, file);
       if (isFileOlderThan(filePath, 7)) {
         fs.unlink(filePath, err => {
-          if (err) console.error('Error deleting file:', filePath, err);
+          if (err) console.error('Error deleting old file:', filePath, err);
           else console.log('🧹 Deleted old image:', filePath);
         });
       }
@@ -255,6 +242,7 @@ cron.schedule('0 2 * * *', () => {
   });
 });
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });
