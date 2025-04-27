@@ -96,7 +96,7 @@
 }
 
 .hideInstructionsButton {
-  bottom: 104px;
+  bottom: 20px;
 }
 
 .editButtonFixed {
@@ -104,7 +104,7 @@
 }
 
 .viewButtonFixed {
-  bottom: 20px;
+  bottom: 104px;
 }
 
 .instructionsContainer {

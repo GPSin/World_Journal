@@ -22,6 +22,7 @@ export default function JournalPage() {
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
+  const [showInstructions, setShowInstructions] = useState(true);
 
   type FilePreview = {
     file: File;
@@ -166,6 +167,29 @@ export default function JournalPage() {
 
   return (
     <div className={styles.container}>
+
+      {showInstructions && (
+        <div className={styles.instructionsContainer}>
+          <div className={styles.instructionBox}>
+            <p>This is the Journal Page:
+              <br />
+              <br />
+              Here you can upload the photos you took and document everything that happened
+              <br />
+              <br />
+              Selecting images only adds them to the preview section incase you change your mind. Once you like your selection of hitting the "Save Journal" button
+              will save them to the journal until you choose to remove them.
+              <br />
+              <br />
+              Saving is very important so don't forget to do it, there are plenty of checks to ensure you're happy with your journal before you leave the page!
+            </p>
+          </div>
+        </div>
+      )}
+      <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
+        {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
+      </button>
+      
       <h2 className={styles.title}>
         Journal for Location [{waypoint.lat.toFixed(2)}, {waypoint.lng.toFixed(2)}]
       </h2>
