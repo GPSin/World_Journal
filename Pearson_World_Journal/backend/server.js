@@ -8,6 +8,7 @@ const sharp = require('sharp');
 
 const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
 const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads')
+const PORT = process.env.PORT || 3001;
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -263,4 +264,6 @@ cron.schedule('0 2 * * *', () => {
 });
 
 
-app.listen(3001, () => console.log("Server running on http://localhost:3001"));
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
