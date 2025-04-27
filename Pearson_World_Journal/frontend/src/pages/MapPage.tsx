@@ -73,8 +73,14 @@ export default function MapPage() {
       const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      // Log the URL returned by the backend
+      console.log('Image URL returned from backend:', res.data.urls[0]);
+
       imageUrl = `${BACKEND_URL}${res.data.urls[0]}`;
     }
+
+    // Log the image URL that will be used
+    console.log('Image URL being saved:', imageUrl);
 
     if (editingWaypoint) {
       const updated = {
@@ -124,18 +130,18 @@ export default function MapPage() {
   };
 
   function DisableDoubleClickZoom() {
-  const map = useMapEvents({
-    dblclick: () => {
-      // no-op: just so map is accessible
-    }
-  });
+    const map = useMapEvents({
+      dblclick: () => {
+        // no-op: just so map is accessible
+      }
+    });
 
-  useEffect(() => {
-    map.doubleClickZoom.disable();
-  }, [map]);
+    useEffect(() => {
+      map.doubleClickZoom.disable();
+    }, [map]);
 
-  return null;
-}
+    return null;
+  }
 
   return (
     <>
@@ -184,90 +190,57 @@ export default function MapPage() {
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
           noWrap={true}
         />
-        <AddWaypoint />
-        {waypoints.map(wp => (
-          <Marker
-            key={wp._id}
-            position={[wp.lat, wp.lng]}
-            icon={waypointIcon}
-            draggable={isEditingMode}
-            eventHandlers={{
-              contextmenu: () => {
-                // eslint-disable-next-line no-restricted-globals
-                if (confirm('Delete this waypoint?')) {
-                  API.delete(`/api/waypoints/${wp._id}`).then(() => {
-                    setWaypoints(prev => prev.filter(p => p._id !== wp._id));
-                  });
-                }
-              },
-              click: () => startEditing(wp),
-              dragend: e => handleMarkerDragEnd(e, wp),
-            }}
-          >
-            <Tooltip direction="top" offset={[0, -30]} opacity={1} permanent={false}>
-              <div
-                style={{
-                  minWidth: '200px',
-                  maxWidth: '250px',
-                  maxHeight: '200px',
-                  backgroundColor: '#2F3C7E',
-                  color: '#FBEAEB',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '1.2em',
-                }}
-              >
-                {wp.image && (
-                  <img
-                    src={`${BACKEND_URL}${wp.image}`}                    
-                    alt="Preview"
-                    style={{
-                      width: '150px',
-                      borderRadius: '5px',
-                      marginBottom: '5px',
-                    }}
-                  />
-                )}
-                <div><strong>{wp.title}</strong></div>
-              </div>
-            </Tooltip>
-            <Popup>
-              <div
-                style={{
-                  minWidth: '100px',
-                  maxWidth: '150px',
-                  maxHeight: '200px',
-                  backgroundColor: '#2F3C7E',
-                  color: '#FBEAEB',
-                  padding: '10px',
-                  borderRadius: '10px',
-                  fontSize: '1.2em',
-                }}
-              >
-                {wp.image && (
-                  <img
-                    src={`${BACKEND_URL}${wp.image}`}
-                    alt="Waypoint"
-                    style={{
-                      width: '100%',
-                      borderRadius: '8px',
-                      marginBottom: '0.5em'
-                    }}
-                  />
-                )}
-                {wp.title && (
-                  <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>
-                )}
-                {wp.description && (
-                  <p style={{ margin: '0 0 0.5em' }}>{wp.description}</p>
-                )}
-                <a href={`/journal/${wp._id}`} style={{ color: '#FBEAEB', textDecoration: 'underline' }}>
-                  View Journal
-                </a>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {waypoints.map(wp => {
+          console.log('Rendering waypoint with image:', wp.image); // Log image URL for each waypoint
+          return (
+            <Marker
+              key={wp._id}
+              position={[wp.lat, wp.lng]}
+              icon={waypointIcon}
+              draggable={isEditingMode}
+              eventHandlers={{
+                contextmenu: () => {
+                  if (confirm('Delete this waypoint?')) {
+                    API.delete(`/api/waypoints/${wp._id}`).then(() => {
+                      setWaypoints(prev => prev.filter(p => p._id !== wp._id));
+                    });
+                  }
+                },
+                click: () => startEditing(wp),
+                dragend: e => handleMarkerDragEnd(e, wp),
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -30]} opacity={1} permanent={false}>
+                <div style={{ minWidth: '200px', maxWidth: '250px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '8px', fontSize: '1.2em' }}>
+                  {wp.image && (
+                    <img
+                      src={`${BACKEND_URL}${wp.image}`}
+                      alt="Preview"
+                      style={{ width: '150px', borderRadius: '5px', marginBottom: '5px' }}
+                    />
+                  )}
+                  <div><strong>{wp.title}</strong></div>
+                </div>
+              </Tooltip>
+              <Popup>
+                <div style={{ minWidth: '100px', maxWidth: '150px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
+                  {wp.image && (
+                    <img
+                      src={`${BACKEND_URL}${wp.image}`}
+                      alt="Waypoint"
+                      style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
+                    />
+                  )}
+                  {wp.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>}
+                  {wp.description && <p style={{ margin: '0 0 0.5em' }}>{wp.description}</p>}
+                  <a href={`/journal/${wp._id}`} style={{ color: '#FBEAEB', textDecoration: 'underline' }}>
+                    View Journal
+                  </a>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
 
       {showModal && (
