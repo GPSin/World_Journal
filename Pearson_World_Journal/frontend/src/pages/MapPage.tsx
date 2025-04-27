@@ -42,6 +42,8 @@ export default function MapPage() {
     imageFile: null,
   });
 
+  const BACKEND_URL = 'https://world-journal.onrender.com/';
+
   useEffect(() => {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));
   }, []);
@@ -71,7 +73,7 @@ export default function MapPage() {
       const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      imageUrl = res.data.urls?.[0];
+      imageUrl = `${BACKEND_URL}${res.data.urls?.[0]}`;
     }
 
     if (editingWaypoint) {
@@ -207,6 +209,7 @@ export default function MapPage() {
                 style={{
                   minWidth: '200px',
                   maxWidth: '250px',
+                  maxHeight: '200px',
                   backgroundColor: '#2F3C7E',
                   color: '#FBEAEB',
                   padding: '10px',
@@ -216,7 +219,7 @@ export default function MapPage() {
               >
                 {wp.image && (
                   <img
-                    src={wp.image}
+                    src={`${BACKEND_URL}${wp.image}`}
                     alt="Preview"
                     style={{
                       width: '150px',
@@ -233,6 +236,7 @@ export default function MapPage() {
                 style={{
                   minWidth: '100px',
                   maxWidth: '150px',
+                  maxHeight: '200px',
                   backgroundColor: '#2F3C7E',
                   color: '#FBEAEB',
                   padding: '10px',
@@ -242,7 +246,7 @@ export default function MapPage() {
               >
                 {wp.image && (
                   <img
-                    src={wp.image}
+                    src={`${BACKEND_URL}${wp.image}`}
                     alt="Waypoint"
                     style={{
                       width: '100%',
