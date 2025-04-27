@@ -5,19 +5,11 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const app = express();
 
 const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
 const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads');
 const PORT = process.env.PORT || 3001;
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
 
 const uploadDirs = ['uploads', 'deleted_uploads'];
 uploadDirs.forEach((dir) => {
@@ -61,8 +53,6 @@ if (!fs.existsSync(DELETED_UPLOADS_DIR)) {
   console.log('✅ Created deleted_uploads folder');
 }
 
-const app = express();
-
 // Ensure waypoints.json exists
 if (!fs.existsSync(WAYPOINTS_FILE)) {
   fs.writeFileSync(WAYPOINTS_FILE, '[]', 'utf-8');
@@ -88,9 +78,10 @@ function saveWaypoints(data) {
 let waypoints = loadWaypoints();
 
 app.use(cors({
-  origin: ['https://world-journal.vercel.app/'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: 'https://world-journal.vercel.app',
+  credentials: true,
 }));
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
