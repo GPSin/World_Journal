@@ -200,6 +200,7 @@ export default function MapPage() {
               draggable={isEditingMode}
               eventHandlers={{
                 contextmenu: () => {
+                  // eslint-disable-next-line no-restricted-globals
                   if (confirm('Delete this waypoint?')) {
                     API.delete(`/api/waypoints/${wp._id}`).then(() => {
                       setWaypoints(prev => prev.filter(p => p._id !== wp._id));
