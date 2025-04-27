@@ -7,7 +7,7 @@ const path = require('path');
 const sharp = require('sharp');
 
 const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
-const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads')
+const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads');
 const PORT = process.env.PORT || 3001;
 
 const storage = multer.diskStorage({
@@ -149,7 +149,6 @@ app.delete('/api/waypoints/:id', (req, res) => {
 });
 
 // Update a waypoint
-// Update a waypoint
 app.put('/api/waypoints/:id', (req, res) => {
   const { id } = req.params;
   const updatedData = req.body;
@@ -175,7 +174,6 @@ app.put('/api/waypoints/:id', (req, res) => {
     res.status(404).send('Waypoint not found');
   }
 });
-
 
 // Handle multiple file uploads
 app.post('/api/upload', upload.array('images', 10), (req, res) => {
@@ -263,7 +261,6 @@ cron.schedule('0 2 * * *', () => {
   });
 });
 
-
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
