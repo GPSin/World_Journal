@@ -73,7 +73,7 @@ export default function MapPage() {
       const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      imageUrl = `${BACKEND_URL}${res.data.urls?.[0]}`;
+      imageUrl = `${BACKEND_URL}${res.data.urls[0]}`;
     }
 
     if (editingWaypoint) {
@@ -219,7 +219,7 @@ export default function MapPage() {
               >
                 {wp.image && (
                   <img
-                    src={`${BACKEND_URL}${wp.image}`}
+                    src={`${BACKEND_URL}${wp.image}`}                    
                     alt="Preview"
                     style={{
                       width: '150px',
@@ -292,7 +292,7 @@ export default function MapPage() {
                   alt="Selected"
                   style={{
                     width: '400px',
-                    height: '200px',
+                    height: '350px',
                     borderRadius: '8px',
                     marginBottom: '1em',
                   }}
