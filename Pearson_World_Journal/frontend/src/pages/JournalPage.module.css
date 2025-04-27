@@ -51,7 +51,7 @@ body {
     height: 300px;
     border-radius: 8px;
     cursor: pointer;
-    object-fit: cover;
+    object-fit: contain;
   }
   
 

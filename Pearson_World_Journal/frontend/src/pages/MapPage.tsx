@@ -161,7 +161,7 @@ export default function MapPage() {
       <button className={`${styles.fixedButton} ${styles.editButtonFixed}`} onClick={() => setIsEditingMode(prev => !prev)}>
         {isEditingMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
       </button>
-      
+
       <button className={`${styles.fixedButton} ${styles.viewButtonFixed}`} onClick={() => navigate('/view-waypoints')}>
         View Waypoints
       </button>
@@ -210,7 +210,7 @@ export default function MapPage() {
                   color: '#FBEAEB',
                   padding: '10px',
                   borderRadius: '8px',
-                  fontSize: '1.4em',
+                  fontSize: '1.2em',
                 }}
               >
                 {wp.image && (
@@ -225,18 +225,18 @@ export default function MapPage() {
                   />
                 )}
                 <div><strong>{wp.title}</strong></div>
-                <div style={{ fontSize: 'smaller' }}>{wp.description}</div>
               </div>
             </Tooltip>
             <Popup>
               <div
                 style={{
-                  minWidth: '200px',
+                  minWidth: '100px',
+                  maxWidth: '200px',
                   backgroundColor: '#2F3C7E',
                   color: '#FBEAEB',
                   padding: '10px',
                   borderRadius: '10px',
-                  fontSize: '1.4em',
+                  fontSize: '1.2em',
                 }}
               >
                 {wp.image && (
