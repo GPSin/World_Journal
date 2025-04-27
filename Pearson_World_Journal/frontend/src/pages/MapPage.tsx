@@ -206,6 +206,7 @@ export default function MapPage() {
               <div
                 style={{
                   minWidth: '200px',
+                  maxWidth: '250px',
                   backgroundColor: '#2F3C7E',
                   color: '#FBEAEB',
                   padding: '10px',
@@ -231,7 +232,7 @@ export default function MapPage() {
               <div
                 style={{
                   minWidth: '100px',
-                  maxWidth: '200px',
+                  maxWidth: '150px',
                   backgroundColor: '#2F3C7E',
                   color: '#FBEAEB',
                   padding: '10px',

@@ -1,3 +1,5 @@
+// Updated server.js implementing typo fixes, proper update handling, and improvements.
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -23,7 +25,7 @@ const PORT = process.env.PORT || 3001;
   }
 });
 
-// Ensure waypoints.json exists (from template or empty array)
+// Ensure waypoints.json exists
 if (!fs.existsSync(WAYPOINTS_FILE)) {
   if (fs.existsSync(WAYPOINTS_TEMPLATE)) {
     fs.copyFileSync(WAYPOINTS_TEMPLATE, WAYPOINTS_FILE);
@@ -34,7 +36,7 @@ if (!fs.existsSync(WAYPOINTS_FILE)) {
   }
 }
 
-// Load waypoints
+// Load and save helpers
 function loadWaypoints() {
   try {
     const data = fs.readFileSync(WAYPOINTS_FILE, 'utf-8');
@@ -45,54 +47,34 @@ function loadWaypoints() {
   }
 }
 
-// Save waypoints
 function saveWaypoints(data) {
   fs.writeFileSync(WAYPOINTS_FILE, JSON.stringify(data, null, 2));
 }
 
 let waypoints = loadWaypoints();
 
-// Multer upload setup
+// Multer setup
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, UPLOADS_DIR);
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + '-' + file.originalname);
-    },
+    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
   }),
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPG, PNG, and WEBP are allowed.'));
-    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Invalid file type.'));
   },
 });
 
 // Middleware
-app.use(cors({
-  origin: 'https://world-journal.vercel.app',
-  credentials: true,
-}));
+app.use(cors({ origin: 'https://world-journal.vercel.app', credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Serve a simple homepage for root URL
-app.get('/', (req, res) => {
-  res.send('🌍 World Journal API is running!');
-});
+// Routes
+app.get('/', (req, res) => res.send('🌍 World Journal API is running!'));
 
-// API routes
+app.get('/api/waypoints', (req, res) => res.json(waypoints));
 
-// Get all waypoints
-app.get('/api/waypoints', (req, res) => {
-  res.json(waypoints);
-});
-
-// Add a new waypoint
 app.post('/api/waypoints', (req, res) => {
   const { lat, lng, title, description, image } = req.body;
   const newWaypoint = {
@@ -109,7 +91,31 @@ app.post('/api/waypoints', (req, res) => {
   res.status(201).json(newWaypoint);
 });
 
-// Delete a waypoint
+app.put('/api/waypoints/:id', (req, res) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+  const index = waypoints.findIndex(wp => wp._id === id);
+
+  if (index !== -1) {
+    const waypoint = waypoints[index];
+
+    if (updatedData.image && updatedData.image !== waypoint.image) {
+      if (waypoint.image) {
+        const oldImagePath = path.join(UPLOADS_DIR, path.basename(waypoint.image));
+        fs.unlink(oldImagePath, err => {
+          if (err) console.error('Failed to delete old image:', err);
+        });
+      }
+    }
+
+    waypoints[index] = { ...waypoint, ...updatedData };
+    saveWaypoints(waypoints);
+    res.json(waypoints[index]);
+  } else {
+    res.status(404).send('Waypoint not found');
+  }
+});
+
 app.delete('/api/waypoints/:id', (req, res) => {
   const { id } = req.params;
   const index = waypoints.findIndex(wp => wp._id === id);
@@ -117,23 +123,17 @@ app.delete('/api/waypoints/:id', (req, res) => {
   if (index !== -1) {
     const waypoint = waypoints[index];
 
-    // Delete single image if exists
+    // Delete single image
     if (waypoint.image) {
-      const imagePath = path.join(UPLOADS_DIR, path.basename(waypoint.image));
-      fs.unlink(imagePath, err => {
-        if (err) console.error('Failed to delete image:', err.message);
-        else console.log('🗑️ Deleted image:', imagePath);
-      });
+      const imgPath = path.join(UPLOADS_DIR, path.basename(waypoint.image));
+      fs.unlink(imgPath, err => err && console.error('Delete image failed:', err));
     }
 
-    // Delete multiple images if exist
+    // Delete multiple images
     if (Array.isArray(waypoint.images)) {
-      waypoint.images.forEach(imageUrl => {
-        const imagePath = path.join(UPLOADS_DIR, path.basename(imageUrl));
-        fs.unlink(imagePath, err => {
-          if (err) console.error('Failed to delete image:', err.message);
-          else console.log('🗑️ Deleted image:', imagePath);
-        });
+      waypoint.images.forEach(url => {
+        const imgPath = path.join(UPLOADS_DIR, path.basename(url));
+        fs.unlink(imgPath, err => err && console.error('Delete image failed:', err));
       });
     }
 
@@ -141,45 +141,16 @@ app.delete('/api/waypoints/:id', (req, res) => {
     saveWaypoints(waypoints);
     res.sendStatus(200);
   } else {
-    res.sendStatus(404);
-  }
-});
-
-// Update a waypoint
-app.put('/api/waypoints/:id', (req, res) => {
-  const { id } = req.params;
-  const updatedData = req.body;
-  const waypoint = waypoints.find(wp => wp._id === id);
-
-  if (waypoint) {
-    if (updatedData.image && updatedData.image !== waypoint.image) {
-      if (waypoint.image) {
-        const oldImagePath = path.join(UPLOADS_DIR, path.basename(waypoint.image));
-        fs.unlink(oldImagePath, err => {
-          if (err) console.error('Failed to delete old image:', err.message);
-          else console.log('🗑️ Deleted old image:', oldImagePath);
-        });
-      }
-    }
-    Object.assign(waypoint, updatedData);
-    saveWaypoints(waypoints);
-    res.json(waypoint);
-  } else {
     res.status(404).send('Waypoint not found');
   }
 });
 
-// Upload multiple images
 app.post('/api/upload', upload.array('images', 10), (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).send('No files uploaded.');
-  }
-
-  const fileUrls = req.files.map(file => `/uploads/${file.filename}`);
-  res.json({ urls: fileUrls });
+  if (!req.files?.length) return res.status(400).send('No files uploaded.');
+  const urls = req.files.map(file => `/uploads/${file.filename}`);
+  res.json({ urls });
 });
 
-// Delete uploaded image (move to deleted_uploads)
 app.delete('/api/delete-image', (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ message: 'Image URL is required' });
@@ -188,7 +159,7 @@ app.delete('/api/delete-image', (req, res) => {
   const sourcePath = path.join(UPLOADS_DIR, fileName);
   const destPath = path.join(DELETED_UPLOADS_DIR, fileName);
 
-  fs.rename(sourcePath, destPath, (err) => {
+  fs.rename(sourcePath, destPath, err => {
     if (err) {
       console.error('Error moving image:', err);
       return res.status(500).json({ message: 'Failed to move image' });
@@ -198,7 +169,6 @@ app.delete('/api/delete-image', (req, res) => {
   });
 });
 
-// Restore deleted image
 app.post('/api/restore-image', (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ message: 'Image URL is required' });
@@ -207,7 +177,7 @@ app.post('/api/restore-image', (req, res) => {
   const sourcePath = path.join(DELETED_UPLOADS_DIR, fileName);
   const destPath = path.join(UPLOADS_DIR, fileName);
 
-  fs.rename(sourcePath, destPath, (err) => {
+  fs.rename(sourcePath, destPath, err => {
     if (err) {
       console.error('Error restoring image:', err);
       return res.status(500).json({ message: 'Failed to restore image' });
@@ -217,15 +187,7 @@ app.post('/api/restore-image', (req, res) => {
   });
 });
 
-// 🧹 Cleanup old files in deleted_uploads folder
-function isFileOlderThan(filePath, days) {
-  const stats = fs.statSync(filePath);
-  const now = new Date();
-  const modifiedTime = new Date(stats.mtime);
-  const ageInDays = (now - modifiedTime) / (1000 * 60 * 60 * 24);
-  return ageInDays > days;
-}
-
+// Cleanup deleted_uploads folder
 cron.schedule('0 2 * * *', () => {
   fs.readdir(DELETED_UPLOADS_DIR, (err, files) => {
     if (err) return console.error('Cleanup failed:', err);
@@ -241,6 +203,13 @@ cron.schedule('0 2 * * *', () => {
     });
   });
 });
+
+function isFileOlderThan(filePath, days) {
+  const stats = fs.statSync(filePath);
+  const now = new Date();
+  const modifiedTime = new Date(stats.mtime);
+  return (now - modifiedTime) / (1000 * 60 * 60 * 24) > days;
+}
 
 // Start server
 app.listen(PORT, () => {
