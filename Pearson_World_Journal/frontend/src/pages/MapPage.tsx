@@ -227,11 +227,11 @@ export default function MapPage() {
                       style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
                   )}
-                  <div><strong>{wp.title}</strong></div>
+                  <div><strong>{wp.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>}</strong></div>
                 </div>
               </Tooltip>
               <Popup>
-                <div style={{ minWidth: '100px', maxWidth: '150px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
+                <div style={{ minWidth: '100px', maxWidth: '300px', maxHeight: '400px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
                   {wp.image && (
                     <img
                       src={getFullImageUrl(wp.image)}

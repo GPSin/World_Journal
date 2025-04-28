@@ -208,12 +208,6 @@ export default function JournalPage() {
         Journal for Location [{waypoint.lat.toFixed(2)}, {waypoint.lng.toFixed(2)}]
       </h2>
 
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button className={`${styles.button} ${styles.mapButton}`} onClick={handleSave}>
-          Save Journal
-        </button>
-      </div>
-
       <textarea
         className={styles.textarea}
         value={journalText}
@@ -263,6 +257,12 @@ export default function JournalPage() {
         multiple
         className={styles.hiddenFileInput}
       />
+      </div>
+
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <button className={`${styles.button} ${styles.mapButton}`} onClick={handleSave}>
+          Save Journal
+        </button>
       </div>
 
       {/* Zoom Modal */}
