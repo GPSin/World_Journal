@@ -24,7 +24,8 @@ export default function JournalPage() {
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
   const [showInstructions, setShowInstructions] = useState(false);
 
-  const BACKEND_URL = 'https://world-journal.onrender.com';
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
 
   type FilePreview = {
     file: File;

@@ -16,7 +16,7 @@ interface Waypoint {
 const ViewWaypointsPage = () => {
 const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
 const navigate = useNavigate();
-const BACKEND_URL = 'https://world-journal.onrender.com';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const getFullImageUrl = (path: string) => {
   if (path.startsWith('http')) {

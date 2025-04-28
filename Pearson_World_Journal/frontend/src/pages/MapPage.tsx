@@ -42,7 +42,7 @@ export default function MapPage() {
     imageFile: null,
   });
 
-  const BACKEND_URL = 'https://world-journal.onrender.com';
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));

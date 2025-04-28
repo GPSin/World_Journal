@@ -18,6 +18,9 @@ backend/uploads
 backend/deleted_uploads
 
 backend/waypoints.json
+/backup_waypoints.json
+
+/scripts
 
 # misc
 .DS_Store

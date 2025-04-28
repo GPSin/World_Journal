@@ -1,21 +1,37 @@
 // Updated server.js implementing typo fixes, proper update handling, and improvements.
 
 const express = require('express');
-const cors = require('cors');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
-const sharp = require('sharp');
 const cron = require('node-cron');
-
 const app = express();
+const cors = require('cors');
 
 const WAYPOINTS_FILE = path.join(__dirname, 'waypoints.json');
 const WAYPOINTS_TEMPLATE = path.join(__dirname, 'waypoints.template.json');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 const DELETED_UPLOADS_DIR = path.join(__dirname, 'deleted_uploads');
 const PORT = process.env.PORT || 3001;
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://world-journal.vercel.app',
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+app.use(express.json());
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Ensure required folders exist
 [UPLOADS_DIR, DELETED_UPLOADS_DIR].forEach(dir => {
@@ -64,11 +80,6 @@ const upload = multer({
     allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Invalid file type.'));
   },
 });
-
-// Middleware
-app.use(cors({ origin: 'https://world-journal.vercel.app', credentials: true }));
-app.use(express.json());
-app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Routes
 app.get('/', (req, res) => res.send('🌍 World Journal API is running!'));
