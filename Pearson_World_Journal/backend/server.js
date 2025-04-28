@@ -56,15 +56,20 @@ app.post('/api/upload', upload.array('images', 10), async (req, res) => {
 
   try {
     const urls = [];
-    for (let file of req.files) {
-      const uploadResponse = await cloudinary.uploader.upload_stream({
-        resource_type: 'image',  
-      }, (error, result) => {
-        if (error) return res.status(500).json({ message: 'Error uploading to Cloudinary', error });
-        urls.push(result.secure_url);
+
+    for (const file of req.files) {
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: 'image' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(file.buffer);  // Use file.buffer instead of piping stream
       });
 
-      file.stream.pipe(uploadResponse);
+      urls.push(result.secure_url);
     }
 
     res.json({ urls });
