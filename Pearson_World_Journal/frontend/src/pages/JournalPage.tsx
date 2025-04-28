@@ -24,6 +24,8 @@ export default function JournalPage() {
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
   const [showInstructions, setShowInstructions] = useState(true);
 
+  const BACKEND_URL = 'https://world-journal.onrender.com';
+
   type FilePreview = {
     file: File;
     previewUrl: string;
@@ -161,7 +163,14 @@ export default function JournalPage() {
     setPendingDeletes([]);
     setHasUnsavedChanges(false);
 
-  };  
+  };
+  
+  const getFullImageUrl = (path: string) => {
+    if (path.startsWith('http')) {
+      return path;
+    }
+    return `${BACKEND_URL}${path}`;
+  };
   
   if (!waypoint) return <p>Loading...</p>;
 
@@ -206,10 +215,10 @@ export default function JournalPage() {
         {images.map((img, i) => (
           <div key={i} className={styles.imageWrapper}>
             <img
-              src={img}
+              src={getFullImageUrl(img)}
               alt={`upload-${i}`}
               className={styles.image}
-              onClick={() => setZoomedImage(img)}
+              onClick={() => setZoomedImage(getFullImageUrl(img))}
             />
             <button
               onClick={() => handleImageDelete(img, i)}
@@ -264,7 +273,7 @@ export default function JournalPage() {
           className={styles.zoomModal}
         >
           <img
-            src={zoomedImage}
+            src={getFullImageUrl(zoomedImage)}
             alt="Zoomed"
             className={styles.zoomedImage}
           />
