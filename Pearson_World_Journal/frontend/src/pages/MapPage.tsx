@@ -42,8 +42,8 @@ export default function MapPage() {
     description: '',
     imageFile: null,
   });
-  
-  const IMAGE_URL = "https://api.cloudinary.com/djq5x8h1n/image/upload"
+
+  const IMAGE_URL = "https://res.cloudinary.com/djq5x8h1n/image/upload";
 
   useEffect(() => {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));
@@ -71,18 +71,21 @@ export default function MapPage() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let imageUrl = editingWaypoint?.image;
-
+  
     if (formData.imageFile) {
       const uploadData = new FormData();
-      uploadData.append('images', formData.imageFile);
+      uploadData.append('file', formData.imageFile); 
+  
       const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      // Log the URL returned by the backend
-      console.log('Image URL returned from backend:', res.data.urls[0]);
-
-      imageUrl = `${IMAGE_URL}${res.data.urls[0]}`;
+  
+      console.log('Image URL returned from backend:', res.data.url);
+  
+      imageUrl = res.data.url;
     }
+    await API.post('/api/waypoints', {image: imageUrl,});
+
 
     // Log the image URL that will be used
     console.log('Image URL being saved:', imageUrl);
@@ -114,10 +117,7 @@ export default function MapPage() {
   };
 
   const getFullImageUrl = (path: string) => {
-    if (path.startsWith('http')) {
-      return path;
-    }
-    return `${IMAGE_URL}${path}`;
+    return path.startsWith('http') ? path : `${IMAGE_URL}/${path}`;
   };
 
   const center: LatLngExpression = [20, 0];
