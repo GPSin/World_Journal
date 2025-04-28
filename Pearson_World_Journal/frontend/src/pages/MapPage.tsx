@@ -170,7 +170,7 @@ export default function MapPage() {
         </div>
       )}
       <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
-        {showInstructions ? 'Show Instructions' : 'Hide Instructions'}
+        {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
       </button>
 
       <button className={`${styles.fixedButton} ${styles.editButtonFixed}`} onClick={() => setIsEditingMode(prev => !prev)}>

@@ -26,7 +26,7 @@ const getFullImageUrl = (path: string) => {
 };
 
   useEffect(() => {
-    fetch('${BACKEND_URL}/api/waypoints')
+    fetch(`${BACKEND_URL}/api/waypoints`)
       .then(res => res.json())
       .then(data => setWaypoints(data))
       .catch(err => console.error('Error fetching waypoints:', err));

@@ -22,7 +22,7 @@ export default function JournalPage() {
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
-  const [showInstructions, setShowInstructions] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   const BACKEND_URL = 'https://world-journal.onrender.com';
 
