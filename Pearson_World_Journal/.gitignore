@@ -20,6 +20,9 @@ backend/deleted_uploads
 backend/waypoints.json
 /backup_waypoints.json
 
+/backend/waypoints.db
+/backend/.env
+
 /scripts
 
 # misc
