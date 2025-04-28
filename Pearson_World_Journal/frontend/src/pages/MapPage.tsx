@@ -150,6 +150,85 @@ export default function MapPage() {
     return null;
   }
 
+  function DynamicPopup({ waypoint }: { waypoint: Waypoint }) {
+    const map = useMapEvents({});
+    const [position, setPosition] = useState<'top' | 'bottom' | 'left' | 'right'>('top');
+  
+    useEffect(() => {
+      const updatePopupPosition = () => {
+        const markerPoint = map.latLngToContainerPoint(L.latLng(waypoint.lat, waypoint.lng));
+        const { x, y } = markerPoint;
+        const width = map.getSize().x;
+        const height = map.getSize().y;
+  
+        if (y < height * 0.25) {
+          setPosition('bottom');
+        } else if (y > height * 0.75) {
+          setPosition('top');
+        } else if (x < width * 0.25) {
+          setPosition('right');
+        } else if (x > width * 0.75) {
+          setPosition('left');
+        } else {
+          setPosition('top'); // Default
+        }
+      };
+  
+      updatePopupPosition();
+      map.on('move', updatePopupPosition);
+  
+      return () => {
+        map.off('move', updatePopupPosition);
+      };
+    }, [map, waypoint.lat, waypoint.lng]);
+  
+    return (
+      <Popup offset={
+        position === 'top' ? [0, -30] :
+        position === 'bottom' ? [0, 30] :
+        position === 'left' ? [-30, 0] :
+        [30, 0]
+      }>
+        <div style={{
+          width: '200px',
+          backgroundColor: '#2F3C7E',
+          color: '#FBEAEB',
+          padding: '10px',
+          borderRadius: '10px',
+          fontSize: '1.2em',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          whiteSpace: 'normal',
+          overflowWrap: 'break-word',
+          wordWrap: 'break-word',
+          textAlign: 'center'
+        }}>
+          {waypoint.image && (
+            <img
+              src={waypoint.image.startsWith('http') ? waypoint.image : `${process.env.REACT_APP_BACKEND_URL}${waypoint.image}`}
+              alt="Waypoint"
+              style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
+            />
+          )}
+          {waypoint.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{waypoint.title}</h4>}
+          {waypoint.description && <p style={{ margin: '0 0 0.5em' }}>{waypoint.description}</p>}
+          <a
+            href={`/journal/${waypoint._id}`}
+            style={{
+              color: '#FBEAEB',
+              textDecoration: 'underline',
+              marginTop: 'auto',
+              wordWrap: 'break-word'
+            }}
+          >
+            View Journal
+          </a>
+        </div>
+      </Popup>
+    );
+  }
+
   return (
     <>
       {showInstructions && (
@@ -242,45 +321,7 @@ export default function MapPage() {
                   {wp.title && <h4 style={{ margin: '0.5em 0 0.2em', wordWrap: 'break-word' }}>{wp.title}</h4>}
                 </div>
               </Tooltip>
-
-              <Popup>
-                <div style={{
-                  width: '200px',
-                  backgroundColor: '#2F3C7E',
-                  color: '#FBEAEB',
-                  padding: '10px',
-                  borderRadius: '10px',
-                  fontSize: '1.2em',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  whiteSpace: 'normal',
-                  overflowWrap: 'break-word',
-                  wordWrap: 'break-word',
-                  textAlign: 'center'
-                }}>
-                  {wp.image && (
-                    <img
-                      src={getFullImageUrl(wp.image)}
-                      alt="Waypoint"
-                      style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
-                    />
-                  )}
-                  {wp.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>}
-                  {wp.description && <p style={{ margin: '0 0 0.5em' }}>{wp.description}</p>}
-                  <a
-                    href={`/journal/${wp._id}`}
-                    style={{
-                      color: '#FBEAEB',
-                      textDecoration: 'underline',
-                      marginTop: 'auto',
-                      wordWrap: 'break-word'
-                    }}
-                  >
-                    View Journal
-                  </a>
-                </div>
-              </Popup>
+              <DynamicPopup waypoint={wp} />
             </Marker>
           );
         })}
