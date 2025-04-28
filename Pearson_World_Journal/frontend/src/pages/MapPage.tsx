@@ -1,5 +1,5 @@
 import {
-  MapContainer, TileLayer, Marker, Popup, useMapEvents, Tooltip
+  MapContainer, TileLayer, Marker, useMapEvents, Tooltip
 } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
@@ -36,6 +36,7 @@ export default function MapPage() {
   const [showModal, setShowModal] = useState(false);
   const [isEditingMode, setIsEditingMode] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);  
   const [formData, setFormData] = useState<{ title: string; description: string; imageFile: File | null }>({
     title: '',
     description: '',
@@ -48,13 +49,17 @@ export default function MapPage() {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));
   }, []);
 
+  const isValidLatLng = (lat: any, lng: any) => {
+    return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  };
+
   const AddWaypoint = () => {
     useMapEvents({
       dblclick: (e: LeafletMouseEvent) => {
         // Prevent default zoom action on double-click
         e.originalEvent.preventDefault();
   
-        if (!isEditingMode) {
+        if (!isEditingMode && isValidLatLng(e.latlng.lat, e.latlng.lng)) {
           setNewWaypoint({ lat: e.latlng.lat, lng: e.latlng.lng });
           setShowModal(true);
         }
@@ -136,6 +141,10 @@ export default function MapPage() {
     setWaypoints(prev => prev.map(w => w._id === wp._id ? updated : w));
   };
 
+  const getDirection = (lat: any) => {
+    return lat > 0 ? 'bottom' : 'top';
+  };
+
   function DisableDoubleClickZoom() {
     const map = useMapEvents({
       dblclick: () => {
@@ -148,85 +157,6 @@ export default function MapPage() {
     }, [map]);
 
     return null;
-  }
-
-  function DynamicPopup({ waypoint }: { waypoint: Waypoint }) {
-    const map = useMapEvents({});
-    const [position, setPosition] = useState<'top' | 'bottom' | 'left' | 'right'>('top');
-  
-    useEffect(() => {
-      const updatePopupPosition = () => {
-        const markerPoint = map.latLngToContainerPoint(L.latLng(waypoint.lat, waypoint.lng));
-        const { x, y } = markerPoint;
-        const width = map.getSize().x;
-        const height = map.getSize().y;
-  
-        if (y < height * 0.25) {
-          setPosition('bottom');
-        } else if (y > height * 0.75) {
-          setPosition('top');
-        } else if (x < width * 0.25) {
-          setPosition('right');
-        } else if (x > width * 0.75) {
-          setPosition('left');
-        } else {
-          setPosition('top'); // Default
-        }
-      };
-  
-      updatePopupPosition();
-      map.on('move', updatePopupPosition);
-  
-      return () => {
-        map.off('move', updatePopupPosition);
-      };
-    }, [map, waypoint.lat, waypoint.lng]);
-  
-    return (
-      <Popup offset={
-        position === 'top' ? [0, -30] :
-        position === 'bottom' ? [0, 30] :
-        position === 'left' ? [-30, 0] :
-        [30, 0]
-      }>
-        <div style={{
-          width: '200px',
-          backgroundColor: '#2F3C7E',
-          color: '#FBEAEB',
-          padding: '10px',
-          borderRadius: '10px',
-          fontSize: '1.2em',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          whiteSpace: 'normal',
-          overflowWrap: 'break-word',
-          wordWrap: 'break-word',
-          textAlign: 'center'
-        }}>
-          {waypoint.image && (
-            <img
-              src={waypoint.image.startsWith('http') ? waypoint.image : `${process.env.REACT_APP_BACKEND_URL}${waypoint.image}`}
-              alt="Waypoint"
-              style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
-            />
-          )}
-          {waypoint.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{waypoint.title}</h4>}
-          {waypoint.description && <p style={{ margin: '0 0 0.5em' }}>{waypoint.description}</p>}
-          <a
-            href={`/journal/${waypoint._id}`}
-            style={{
-              color: '#FBEAEB',
-              textDecoration: 'underline',
-              marginTop: 'auto',
-              wordWrap: 'break-word'
-            }}
-          >
-            View Journal
-          </a>
-        </div>
-      </Popup>
-    );
   }
 
   return (
@@ -248,6 +178,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
+      
       <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
         {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
       </button>
@@ -277,7 +208,7 @@ export default function MapPage() {
           noWrap={true}
         />
         {waypoints.map(wp => {
-          console.log('Rendering waypoint with image:', wp.image); // Log image URL for each waypoint
+          console.log('Rendering waypoint with image:', wp.image);
           return (
             <Marker
               key={wp._id}
@@ -293,11 +224,14 @@ export default function MapPage() {
                     });
                   }
                 },
-                click: () => startEditing(wp),
+                click: () => {
+                  startEditing(wp);
+                  setSelectedWaypoint(wp);
+                },
                 dragend: e => handleMarkerDragEnd(e, wp),
               }}
             >
-              <Tooltip direction="top" offset={[0, -30]} opacity={1} permanent={false}>
+              <Tooltip direction={getDirection(wp.lat)} offset={getDirection(wp.lat) === 'bottom' ? [0, 0] : [0, -30]}  opacity={1} permanent={false}>
                 <div style={{
                   width: '150px',
                   backgroundColor: '#2F3C7E',
@@ -321,11 +255,77 @@ export default function MapPage() {
                   {wp.title && <h4 style={{ margin: '0.5em 0 0.2em', wordWrap: 'break-word' }}>{wp.title}</h4>}
                 </div>
               </Tooltip>
-              <DynamicPopup waypoint={wp} />
             </Marker>
           );
         })}
       </MapContainer>
+
+      {selectedWaypoint && (
+        <div style={{
+          position: 'fixed',
+          top: '100px',
+          [selectedWaypoint.lng > 0 ? 'left' : 'right']: '70px',
+          width: '220px',
+          backgroundColor: '#2F3C7E',
+          color: '#FBEAEB',
+          padding: '15px',
+          borderRadius: '10px',
+          zIndex: 1000,
+          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center'
+        }}>
+          {selectedWaypoint.image && (
+            <img
+              src={getFullImageUrl(selectedWaypoint.image)}
+              alt="Waypoint"
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                marginBottom: '0.5em',
+                objectFit: 'cover' // Makes the image look nice if sizing varies
+              }}
+            />
+          )}
+          {selectedWaypoint.title && (
+            <h4 style={{ margin: '0.5em 0 0.2em' }}>
+              {selectedWaypoint.title}
+            </h4>
+          )}
+          {selectedWaypoint.description && (
+            <p style={{ margin: '0 0 0.5em' }}>
+              {selectedWaypoint.description}
+            </p>
+          )}
+          <a
+            href={`/journal/${selectedWaypoint._id}`}
+            style={{
+              color: '#FBEAEB',
+              textDecoration: 'underline',
+              marginTop: '10px'
+            }}
+          >
+            View Journal
+          </a>
+          <button 
+            onClick={() => setSelectedWaypoint(null)} 
+            style={{
+              marginTop: '15px',
+              backgroundColor: '#FBEAEB',
+              color: '#2F3C7E',
+              border: 'none',
+              borderRadius: '5px',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            Close
+          </button>
+        </div>
+      )}
 
       {showModal && (
         <div className={styles.modal} style={{ position: 'fixed', top: '10vh', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
