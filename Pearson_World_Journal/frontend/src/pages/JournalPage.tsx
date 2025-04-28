@@ -24,8 +24,7 @@ export default function JournalPage() {
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
   const [showInstructions, setShowInstructions] = useState(false);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-
+  const IMAGE_URL = "https://api.cloudinary.com/djq5x8h1n/image/upload"
 
   type FilePreview = {
     file: File;
@@ -170,7 +169,7 @@ export default function JournalPage() {
     if (path.startsWith('http')) {
       return path;
     }
-    return `${BACKEND_URL}${path}`;
+    return `${IMAGE_URL}${path}`;
   };
   
   if (!waypoint) return <p>Loading...</p>;

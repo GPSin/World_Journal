@@ -17,13 +17,15 @@ const ViewWaypointsPage = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const navigate = useNavigate();
+  
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const IMAGE_URL = "https://api.cloudinary.com/djq5x8h1n/image/upload"
 
   const getFullImageUrl = (path: string) => {
     if (path.startsWith('http')) {
       return path;
     }
-    return `${BACKEND_URL}${path}`;
+    return `${IMAGE_URL}${path}`;
   };
 
   useEffect(() => {
