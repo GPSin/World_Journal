@@ -219,12 +219,12 @@ export default function MapPage() {
               }}
             >
               <Tooltip direction="top" offset={[0, -30]} opacity={1} permanent={false}>
-                <div style={{ minWidth: '200px', maxWidth: '250px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '8px', fontSize: '1.2em' }}>
+                <div style={{ minWidth: '100px', maxWidth: '150px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
                   {wp.image && (
                     <img
                       src={getFullImageUrl(wp.image)}
                       alt="Preview"
-                      style={{ width: '150px', borderRadius: '5px', marginBottom: '5px' }}
+                      style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
                   )}
                   <div><strong>{wp.title}</strong></div>
@@ -272,10 +272,11 @@ export default function MapPage() {
                   src={previewUrl}
                   alt="Selected"
                   style={{
-                    width: '400px',
-                    height: '350px',
-                    borderRadius: '8px',
+                    maxWidth: '300px',
+                    maxHeight: '350px',
+                    borderRadius: '12px',
                     marginBottom: '1em',
+                    marginTop: '1em'
                   }}
                 />
               </div>

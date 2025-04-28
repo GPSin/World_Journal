@@ -199,10 +199,20 @@ export default function JournalPage() {
       <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
         {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
       </button>
+
+      <button className={`${styles.fixedButton} ${styles.returnButton}`} onClick={handleReturnToMap}>
+        Return to Map
+      </button>
       
       <h2 className={styles.title}>
         Journal for Location [{waypoint.lat.toFixed(2)}, {waypoint.lng.toFixed(2)}]
       </h2>
+
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <button className={`${styles.button} ${styles.mapButton}`} onClick={handleSave}>
+          Save Journal
+        </button>
+      </div>
 
       <textarea
         className={styles.textarea}
@@ -253,18 +263,6 @@ export default function JournalPage() {
         multiple
         className={styles.hiddenFileInput}
       />
-      </div>
-
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button className={`${styles.button} ${styles.mapButton}`} onClick={handleSave}>
-          Save Journal
-        </button>
-        <button
-          className={`${styles.button} ${styles.mapButton}`}
-          onClick={handleReturnToMap}
-        >
-          Return to Map
-        </button>
       </div>
 
       {/* Zoom Modal */}

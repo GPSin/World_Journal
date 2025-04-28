@@ -95,16 +95,16 @@
   background-color: #0056b3;
 }
 
-.hideInstructionsButton {
-  bottom: 20px;
+.editButtonFixed {
+  bottom: 104px;
 }
 
-.editButtonFixed {
+.hideInstructionsButton {
   bottom: 62px;
 }
 
 .viewButtonFixed {
-  bottom: 104px;
+  bottom: 20px;
 }
 
 .instructionsContainer {

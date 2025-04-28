@@ -186,6 +186,10 @@ body {
   }
   
   .hideInstructionsButton {
+    bottom: 62px;
+  }
+
+  .returnButton {
     bottom: 20px;
   }
 
