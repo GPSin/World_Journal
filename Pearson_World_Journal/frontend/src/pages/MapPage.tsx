@@ -227,7 +227,10 @@ export default function MapPage() {
                   borderRadius: '10px',
                   fontSize: '1.2em',
                   wordWrap: 'break-word',
-                  overflowWrap: 'break-word'
+                  overflowWrap: 'break-word',
+                  whiteSpace: 'normal',
+                  overflow: 'hidden',
+                  textAlign: 'center'
                 }}>
                   {wp.image && (
                     <img
@@ -242,9 +245,7 @@ export default function MapPage() {
 
               <Popup>
                 <div style={{
-                  width: '150px',
-                  maxHeight: '300px',
-                  overflowY: 'auto',
+                  width: '200px',
                   backgroundColor: '#2F3C7E',
                   color: '#FBEAEB',
                   padding: '10px',
@@ -252,7 +253,11 @@ export default function MapPage() {
                   fontSize: '1.2em',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'space-between'
+                  justifyContent: 'space-between',
+                  whiteSpace: 'normal',
+                  overflowWrap: 'break-word',
+                  wordWrap: 'break-word',
+                  textAlign: 'center'
                 }}>
                   {wp.image && (
                     <img
