@@ -35,7 +35,7 @@ export default function MapPage() {
   const [editingWaypoint, setEditingWaypoint] = useState<Waypoint | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isEditingMode, setIsEditingMode] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [formData, setFormData] = useState<{ title: string; description: string; imageFile: File | null }>({
     title: '',
     description: '',
@@ -170,7 +170,7 @@ export default function MapPage() {
         </div>
       )}
       <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
-        {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
+        {showInstructions ? 'Show Instructions' : 'Hide Instructions'}
       </button>
 
       <button className={`${styles.fixedButton} ${styles.editButtonFixed}`} onClick={() => setIsEditingMode(prev => !prev)}>

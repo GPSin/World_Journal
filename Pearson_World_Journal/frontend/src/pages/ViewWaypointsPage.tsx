@@ -16,9 +16,17 @@ interface Waypoint {
 const ViewWaypointsPage = () => {
 const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
 const navigate = useNavigate();
+const BACKEND_URL = 'https://world-journal.onrender.com';
+
+const getFullImageUrl = (path: string) => {
+  if (path.startsWith('http')) {
+    return path;
+  }
+  return `${BACKEND_URL}${path}`;
+};
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/waypoints')
+    fetch('${BACKEND_URL}/api/waypoints')
       .then(res => res.json())
       .then(data => setWaypoints(data))
       .catch(err => console.error('Error fetching waypoints:', err));
@@ -34,7 +42,7 @@ const navigate = useNavigate();
             {waypoints.map((waypoint) => (
             <div key={waypoint._id} className={styles['waypoint-card']}>
                 <img
-                src={waypoint.image}
+                src={waypoint.image ? getFullImageUrl(waypoint.image) : ''}
                 alt={waypoint.title}
                 className={styles['waypoint-image']}
                 />
