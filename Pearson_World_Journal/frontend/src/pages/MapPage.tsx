@@ -219,7 +219,16 @@ export default function MapPage() {
               }}
             >
               <Tooltip direction="top" offset={[0, -30]} opacity={1} permanent={false}>
-                <div style={{ minWidth: '100px', maxWidth: '150px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
+                <div style={{
+                  width: '150px',
+                  backgroundColor: '#2F3C7E',
+                  color: '#FBEAEB',
+                  padding: '10px',
+                  borderRadius: '10px',
+                  fontSize: '1.2em',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word'
+                }}>
                   {wp.image && (
                     <img
                       src={getFullImageUrl(wp.image)}
@@ -227,11 +236,24 @@ export default function MapPage() {
                       style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
                   )}
-                  <div><strong>{wp.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>}</strong></div>
+                  {wp.title && <h4 style={{ margin: '0.5em 0 0.2em', wordWrap: 'break-word' }}>{wp.title}</h4>}
                 </div>
               </Tooltip>
+
               <Popup>
-                <div style={{ minWidth: '100px', maxWidth: '300px', maxHeight: '400px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
+                <div style={{
+                  width: '150px',
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  backgroundColor: '#2F3C7E',
+                  color: '#FBEAEB',
+                  padding: '10px',
+                  borderRadius: '10px',
+                  fontSize: '1.2em',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}>
                   {wp.image && (
                     <img
                       src={getFullImageUrl(wp.image)}
@@ -241,7 +263,15 @@ export default function MapPage() {
                   )}
                   {wp.title && <h4 style={{ margin: '0.5em 0 0.2em' }}>{wp.title}</h4>}
                   {wp.description && <p style={{ margin: '0 0 0.5em' }}>{wp.description}</p>}
-                  <a href={`/journal/${wp._id}`} style={{ color: '#FBEAEB', textDecoration: 'underline' }}>
+                  <a
+                    href={`/journal/${wp._id}`}
+                    style={{
+                      color: '#FBEAEB',
+                      textDecoration: 'underline',
+                      marginTop: 'auto',
+                      wordWrap: 'break-word'
+                    }}
+                  >
                     View Journal
                   </a>
                 </div>
