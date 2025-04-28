@@ -108,6 +108,13 @@ export default function MapPage() {
     setFormData({ title: '', description: '', imageFile: null });
   };
 
+  const getFullImageUrl = (path: string) => {
+    if (path.startsWith('http')) {
+      return path;
+    }
+    return `${BACKEND_URL}${path}`;
+  };
+
   const center: LatLngExpression = [20, 0];
 
   const startEditing = (wp: Waypoint) => {
@@ -215,7 +222,7 @@ export default function MapPage() {
                 <div style={{ minWidth: '200px', maxWidth: '250px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '8px', fontSize: '1.2em' }}>
                   {wp.image && (
                     <img
-                      src={`${BACKEND_URL}${wp.image}`}
+                      src={getFullImageUrl(wp.image)}
                       alt="Preview"
                       style={{ width: '150px', borderRadius: '5px', marginBottom: '5px' }}
                     />
@@ -227,7 +234,7 @@ export default function MapPage() {
                 <div style={{ minWidth: '100px', maxWidth: '150px', maxHeight: '300px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em' }}>
                   {wp.image && (
                     <img
-                      src={`${BACKEND_URL}${wp.image}`}
+                      src={getFullImageUrl(wp.image)}
                       alt="Waypoint"
                       style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
