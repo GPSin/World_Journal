@@ -43,7 +43,7 @@ export default function MapPage() {
     imageFile: null,
   });
 
-  const IMAGE_URL = "https://res.cloudinary.com/djq5x8h1n/image/upload";
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));
@@ -71,64 +71,39 @@ export default function MapPage() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let imageUrl = editingWaypoint?.image;
-  
+
     if (formData.imageFile) {
       const uploadData = new FormData();
-      uploadData.append('images', formData.imageFile); 
-  
+      uploadData.append('images', formData.imageFile);
       const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-  
+      // Log the URL returned by the backend
       console.log('Image URL returned from backend:', res.data.urls[0]);
-  
-      imageUrl = res.data.urls[0];
+
+      imageUrl = `${BACKEND_URL}${res.data.urls[0]}`;
     }
 
-    console.log('Sending data to backend:', {
-      imageUrl,
-      title: formData.title,
-      description: formData.description,
-    });
+    // Log the image URL that will be used
+    console.log('Image URL being saved:', imageUrl);
 
-    if (editingWaypoint && editingWaypoint._id) {
+    if (editingWaypoint) {
       const updated = {
         ...editingWaypoint,
         title: formData.title,
         description: formData.description,
         image: imageUrl,
       };
-    
-      console.log('Editing waypoint:', editingWaypoint);
-    
       await API.put(`/api/waypoints/${editingWaypoint._id}`, updated);
       setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
-    }
-     else if (newWaypoint) {
+    } else if (newWaypoint) {
       const newWp = {
-        lat: newWaypoint.lat,
-        lng: newWaypoint.lng,
+        ...newWaypoint,
         title: formData.title,
         description: formData.description,
         image: imageUrl,
       };
-
-      if (!newWaypoint?.lat || !newWaypoint?.lng) {
-        console.error('Missing lat/lng in newWaypoint:', newWaypoint);
-        alert('Please select a location on the map first.');
-        return;
-      }
-
-
       const res = await API.post('/api/waypoints', newWp);
-      console.log("API POST response for new waypoint:", res.data);
-
-      if (!res.data._id) {
-        console.error("New waypoint returned from backend without _id:", res.data);
-        alert("Error creating waypoint: missing ID");
-        return;
-      }
-
       setWaypoints(prev => [...prev, res.data]);
     }
 
@@ -139,14 +114,16 @@ export default function MapPage() {
   };
 
   const getFullImageUrl = (path: string) => {
-    return path.startsWith('http') ? path : `${IMAGE_URL}/${path}`;
+    if (path.startsWith('http')) {
+      return path;
+    }
+    return `${BACKEND_URL}${path}`;
   };
 
   const center: LatLngExpression = [20, 0];
 
   const startEditing = (wp: Waypoint) => {
     if (!isEditingMode) return;
-    console.log("Editing waypoint", wp)
     setEditingWaypoint(wp);
     setFormData({
       title: wp.title || '',
@@ -156,19 +133,13 @@ export default function MapPage() {
     setShowModal(true);
   };
 
-  const handleMarkerDragEnd = (e: L.LeafletEvent, wp: Waypoint) => {
+  const handleMarkerDragEnd = async (e: L.LeafletEvent, wp: Waypoint) => {
     const marker = e.target;
     const newPos = marker.getLatLng();
     const updated = { ...wp, lat: newPos.lat, lng: newPos.lng };
-  
+    await API.put(`/api/waypoints/${wp._id}`, updated);
     setWaypoints(prev => prev.map(w => w._id === wp._id ? updated : w));
-  
-    API.put(`/api/waypoints/${wp._id}`, updated)
-      .catch(err => {
-        alert("Failed to update waypoint position!");
-      });
   };
-  
 
   const getDirection = (lat: any) => {
     return lat > 0 ? 'bottom' : 'top';
@@ -314,7 +285,7 @@ export default function MapPage() {
                 width: '100%',
                 borderRadius: '8px',
                 marginBottom: '0.5em',
-                objectFit: 'cover' // Makes the image look nice if sizing varies
+                objectFit: 'cover'
               }}
             />
           )}
