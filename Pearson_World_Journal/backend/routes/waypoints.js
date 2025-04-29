@@ -15,18 +15,24 @@ router.get('/', async (req, res) => {
 
 // Add a new waypoint
 router.post('/', async (req, res) => {
-  const { lat, lng, title, description, image } = req.body;
-  try {
-    const result = await db.run(
-      'INSERT INTO waypoints (lat, lng, title, description, image) VALUES (?, ?, ?, ?, ?)',
-      [lat, lng, title, description, image]
-    );
-    res.status(201).json({ _id: result.lastID, lat, lng, title, description, image });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Database error');
-  }
-});
+    const { lat, lng, title, description, image } = req.body;
+  
+    // Validate required fields
+    if (lat == null || lng == null || !title) {
+      return res.status(400).json({ error: 'lat, lng, and title are required' });
+    }
+  
+    try {
+      const result = await db.run(
+        'INSERT INTO waypoints (lat, lng, title, description, image) VALUES (?, ?, ?, ?, ?)',
+        [lat, lng, title, description, image]
+      );
+      res.status(201).json({ _id: result.lastID, lat, lng, title, description, image });
+    } catch (err) {
+      console.error('Database run error', err);
+      res.status(500).send('Database error');
+    }
+  });
 
 // Update a waypoint
 router.put('/:id', async (req, res) => {

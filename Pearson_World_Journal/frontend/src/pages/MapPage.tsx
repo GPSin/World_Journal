@@ -84,8 +84,6 @@ export default function MapPage() {
   
       imageUrl = res.data.urls[0];
     }
-    await API.post('/api/waypoints', {image: imageUrl,});
-
 
     console.log('Sending data to backend:', {
       imageUrl,
@@ -104,12 +102,19 @@ export default function MapPage() {
       setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
     } else if (newWaypoint) {
       const newWp = {
-        ...newWaypoint,
+        lat: newWaypoint.lat,
+        lng: newWaypoint.lng,
         title: formData.title,
         description: formData.description,
         image: imageUrl,
       };
-      console.log('Creating new waypoint:', newWp);
+
+      if (!newWaypoint?.lat || !newWaypoint?.lng) {
+        console.error('Missing lat/lng in newWaypoint:', newWaypoint);
+        alert('Please select a location on the map first.');
+        return;
+      }
+
 
       const res = await API.post('/api/waypoints', newWp);
       setWaypoints(prev => [...prev, res.data]);
