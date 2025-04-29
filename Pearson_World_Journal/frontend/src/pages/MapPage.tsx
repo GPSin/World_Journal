@@ -74,15 +74,15 @@ export default function MapPage() {
   
     if (formData.imageFile) {
       const uploadData = new FormData();
-      uploadData.append('file', formData.imageFile); 
+      uploadData.append('images', formData.imageFile); 
   
       const res = await API.post('/api/upload', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
   
-      console.log('Image URL returned from backend:', res.data.url);
+      console.log('Image URL returned from backend:', res.data.urls[0]);
   
-      imageUrl = res.data.url;
+      imageUrl = res.data.urls[0];
     }
     await API.post('/api/waypoints', {image: imageUrl,});
 

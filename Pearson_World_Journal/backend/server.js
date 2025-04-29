@@ -19,6 +19,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+console.log('Cloudinary config:', cloudinary.config());
+
+
 const allowedOrigins = [
   'http://localhost:3000',
   'https://world-journal.vercel.app',
@@ -58,7 +61,7 @@ app.post('/api/upload', upload.array('images', 10), async (req, res) => {
     const urls = [];
 
     for (const file of req.files) {
-      const result = await new Promise((resolve, reject) => {
+      const uploadResult = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { resource_type: 'image' },
           (error, result) => {
@@ -66,10 +69,10 @@ app.post('/api/upload', upload.array('images', 10), async (req, res) => {
             else resolve(result);
           }
         );
-        stream.end(file.buffer);  // Use file.buffer instead of piping stream
+        stream.end(file.buffer);
       });
-
-      urls.push(result.secure_url);
+    
+      urls.push(uploadResult.secure_url);
     }
 
     res.json({ urls });
