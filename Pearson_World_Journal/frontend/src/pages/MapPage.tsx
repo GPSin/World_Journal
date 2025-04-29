@@ -91,25 +91,20 @@ export default function MapPage() {
       description: formData.description,
     });
 
-    if (editingWaypoint) {
+    if (editingWaypoint && editingWaypoint._id) {
       const updated = {
         ...editingWaypoint,
         title: formData.title,
         description: formData.description,
         image: imageUrl,
       };
-
-      if (!editingWaypoint?._id) {
-        console.error('Missing editingWaypoint._id:', editingWaypoint);
-        alert('Waypoint ID is missing. Cannot update.');
-        return;
-      }
     
       console.log('Editing waypoint:', editingWaypoint);
-
+    
       await API.put(`/api/waypoints/${editingWaypoint._id}`, updated);
       setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
-    } else if (newWaypoint) {
+    }
+     else if (newWaypoint) {
       const newWp = {
         lat: newWaypoint.lat,
         lng: newWaypoint.lng,
