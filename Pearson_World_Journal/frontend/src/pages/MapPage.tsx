@@ -98,6 +98,15 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
+
+      if (!editingWaypoint?._id) {
+        console.error('Missing editingWaypoint._id:', editingWaypoint);
+        alert('Waypoint ID is missing. Cannot update.');
+        return;
+      }
+    
+      console.log('Editing waypoint:', editingWaypoint);
+
       await API.put(`/api/waypoints/${editingWaypoint._id}`, updated);
       setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
     } else if (newWaypoint) {
@@ -134,6 +143,7 @@ export default function MapPage() {
 
   const startEditing = (wp: Waypoint) => {
     if (!isEditingMode) return;
+    console.log("Editing waypoint" + wp)
     setEditingWaypoint(wp);
     setFormData({
       title: wp.title || '',
