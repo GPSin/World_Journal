@@ -126,6 +126,14 @@ export default function MapPage() {
 
 
       const res = await API.post('/api/waypoints', newWp);
+      console.log("API POST response for new waypoint:", res.data);
+
+      if (!res.data._id) {
+        console.error("New waypoint returned from backend without _id:", res.data);
+        alert("Error creating waypoint: missing ID");
+        return;
+      }
+
       setWaypoints(prev => [...prev, res.data]);
     }
 
@@ -143,7 +151,7 @@ export default function MapPage() {
 
   const startEditing = (wp: Waypoint) => {
     if (!isEditingMode) return;
-    console.log("Editing waypoint" + wp)
+    console.log("Editing waypoint", wp)
     setEditingWaypoint(wp);
     setFormData({
       title: wp.title || '',
