@@ -87,8 +87,11 @@ export default function MapPage() {
     await API.post('/api/waypoints', {image: imageUrl,});
 
 
-    // Log the image URL that will be used
-    console.log('Image URL being saved:', imageUrl);
+    console.log('Sending data to backend:', {
+      imageUrl,
+      title: formData.title,
+      description: formData.description,
+    });
 
     if (editingWaypoint) {
       const updated = {
@@ -106,6 +109,8 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
+      console.log('Creating new waypoint:', newWp);
+
       const res = await API.post('/api/waypoints', newWp);
       setWaypoints(prev => [...prev, res.data]);
     }
