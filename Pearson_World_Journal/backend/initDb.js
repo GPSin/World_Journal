@@ -1,5 +1,9 @@
+const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./waypoints.db');
+
+// Use an absolute path for database file on Render
+const dbPath = path.join(__dirname, 'waypoints.db');
+const db = new sqlite3.Database(dbPath)
 
 // Create waypoints table
 db.serialize(() => {

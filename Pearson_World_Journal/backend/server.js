@@ -4,9 +4,10 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
+const sqlite3 = require('sqlite3').verbose();
+const cloudinary = require('cloudinary').v2;
 const app = express();
 const cors = require('cors');
-const cloudinary = require('cloudinary').v2;
 
 const waypointRoutes = require('./routes/waypoints');
 const PORT = process.env.PORT || 3001;
@@ -21,7 +22,33 @@ cloudinary.config({
 
 console.log('Cloudinary config:', cloudinary.config());
 
+// Initialize SQLite database
+const dbPath = path.join(__dirname, 'waypoints.db');
+const db = new sqlite3.Database(dbPath);
 
+// Create waypoints table if it doesn't exist
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS waypoints (
+    _id TEXT PRIMARY KEY,
+    lat REAL NOT NULL,
+    lng REAL NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    image TEXT,
+    images TEXT, -- Will store JSON string of image paths
+    journalText TEXT
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating table:', err);
+    } else {
+      console.log('Waypoints table created or already exists');
+    }
+  });
+});
+
+console.log('Database initialized with full waypoint structure.');
+
+// CORS configuration
 const allowedOrigins = [
   'http://localhost:3000',
   'https://world-journal.vercel.app',
@@ -41,7 +68,7 @@ app.use(cors({
 app.use(express.json());
 app.use('/api/waypoints', waypointRoutes);
 
-// Multer setup
+// Multer setup for image uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
@@ -87,7 +114,7 @@ app.delete('/api/delete-image', async (req, res) => {
   if (!imageUrl) return res.status(400).json({ message: 'Image URL is required' });
 
   // Extract the public ID from the Cloudinary URL
-  const publicId = imageUrl.split('/').pop().split('.')[0]; // Assuming your URL ends with the file name
+  const publicId = imageUrl.split('/').pop().split('.')[0];
 
   try {
     const result = await cloudinary.uploader.destroy(publicId);
@@ -100,7 +127,7 @@ app.delete('/api/delete-image', async (req, res) => {
     console.error('Error deleting image from Cloudinary:', error);
     res.status(500).json({ message: 'Failed to delete image' });
   }
-})
+});
 
 app.post('/api/restore-image', async (req, res) => {
   const { imageUrl } = req.body;
