@@ -156,13 +156,19 @@ export default function MapPage() {
     setShowModal(true);
   };
 
-  const handleMarkerDragEnd = async (e: L.LeafletEvent, wp: Waypoint) => {
+  const handleMarkerDragEnd = (e: L.LeafletEvent, wp: Waypoint) => {
     const marker = e.target;
     const newPos = marker.getLatLng();
     const updated = { ...wp, lat: newPos.lat, lng: newPos.lng };
-    await API.put(`/api/waypoints/${wp._id}`, updated);
+  
     setWaypoints(prev => prev.map(w => w._id === wp._id ? updated : w));
+  
+    API.put(`/api/waypoints/${wp._id}`, updated)
+      .catch(err => {
+        alert("Failed to update waypoint position!");
+      });
   };
+  
 
   const getDirection = (lat: any) => {
     return lat > 0 ? 'bottom' : 'top';
