@@ -54,8 +54,9 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   console.log('Deleting waypoint with id:', id);
+
   try {
-    await db.run('DELETE FROM waypoints WHERE id = ?', [id]);
+    const result = await db.run('DELETE FROM waypoints WHERE id = ?', [id]);
     console.log('Deletion result:', result);
     res.status(200).send('Waypoint deleted');
   } catch (err) {
