@@ -43,7 +43,7 @@ export default function MapPage() {
     imageFile: null,
   });
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const IMAGE_URL = "https://api.cloudinary.com/djq5x8h1n/image/upload"
 
   useEffect(() => {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));
@@ -81,7 +81,8 @@ export default function MapPage() {
       // Log the URL returned by the backend
       console.log('Image URL returned from backend:', res.data.urls[0]);
 
-      imageUrl = `${BACKEND_URL}${res.data.urls[0]}`;
+      imageUrl = `${IMAGE_URL}${res.data.urls[0]}`;
+      console.log('Cloudinary Image URL:', res.data.urls[0]);
     }
 
     // Log the image URL that will be used
@@ -117,7 +118,7 @@ export default function MapPage() {
     if (path.startsWith('http')) {
       return path;
     }
-    return `${BACKEND_URL}${path}`;
+    return `${IMAGE_URL}${path}`;
   };
 
   const center: LatLngExpression = [20, 0];
