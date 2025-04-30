@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
         'INSERT INTO waypoints (lat, lng, title, description, image) VALUES (?, ?, ?, ?, ?)',
         [lat, lng, title, description, image]
       );
-      res.status(201).json({ _id: result.lastID, lat, lng, title, description, image });
+      res.status(201).json({ id: result.lastID, lat, lng, title, description, image });
     } catch (err) {
       console.error('Database run error', err);
       res.status(500).send('Database error');
@@ -53,8 +53,10 @@ router.put('/:id', async (req, res) => {
 // Delete a waypoint
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  console.log('Deleting waypoint with id:', id);
   try {
     await db.run('DELETE FROM waypoints WHERE id = ?', [id]);
+    console.log('Deletion result:', result);
     res.status(200).send('Waypoint deleted');
   } catch (err) {
     console.error(err);

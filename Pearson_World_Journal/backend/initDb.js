@@ -8,7 +8,7 @@ const db = new sqlite3.Database(dbPath)
 // Create waypoints table
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS waypoints (
-    _id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     lat REAL NOT NULL,
     lng REAL NOT NULL,
     title TEXT NOT NULL,
