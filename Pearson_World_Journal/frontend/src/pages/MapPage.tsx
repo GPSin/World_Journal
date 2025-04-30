@@ -79,9 +79,8 @@ export default function MapPage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       // Log the URL returned by the backend
-      console.log('Image URL returned from backend:', res.data.urls[0]);
 
-      imageUrl = `${IMAGE_URL}${res.data.urls[0]}`;
+      imageUrl = `${res.data.urls[0]}`;
       console.log('Cloudinary Image URL:', res.data.urls[0]);
     }
 
