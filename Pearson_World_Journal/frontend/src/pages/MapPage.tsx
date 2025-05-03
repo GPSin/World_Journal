@@ -10,7 +10,7 @@ import styles from './MapPage.module.css';
 import './global.css';
 
 interface Waypoint {
-  id: string;
+  _id: string;
   lat: number;
   lng: number;
   title?: string;
@@ -43,7 +43,7 @@ export default function MapPage() {
     imageFile: null,
   });
 
-  const IMAGE_URL = "https://res.cloudinary.com/djq5x8h1n/image/upload"
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     API.get('/api/waypoints').then(res => setWaypoints(res.data));
@@ -79,9 +79,9 @@ export default function MapPage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       // Log the URL returned by the backend
+      console.log('Image URL returned from backend:', res.data.urls[0]);
 
-      imageUrl = `${res.data.urls[0]}`;
-      console.log('Cloudinary Image URL:', res.data.urls[0]);
+      imageUrl = `${BACKEND_URL}${res.data.urls[0]}`;
     }
 
     // Log the image URL that will be used
@@ -94,8 +94,8 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
-      await API.put(`/api/waypoints/${editingWaypoint.id}`, updated);
-      setWaypoints(prev => prev.map(wp => wp.id === updated.id ? updated : wp));
+      await API.put(`/api/waypoints/${editingWaypoint._id}`, updated);
+      setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
     } else if (newWaypoint) {
       const newWp = {
         ...newWaypoint,
@@ -117,7 +117,7 @@ export default function MapPage() {
     if (path.startsWith('http')) {
       return path;
     }
-    return `${IMAGE_URL}${path}`;
+    return `${BACKEND_URL}${path}`;
   };
 
   const center: LatLngExpression = [20, 0];
@@ -137,8 +137,8 @@ export default function MapPage() {
     const marker = e.target;
     const newPos = marker.getLatLng();
     const updated = { ...wp, lat: newPos.lat, lng: newPos.lng };
-    await API.put(`/api/waypoints/${wp.id}`, updated);
-    setWaypoints(prev => prev.map(w => w.id === wp.id ? updated : w));
+    await API.put(`/api/waypoints/${wp._id}`, updated);
+    setWaypoints(prev => prev.map(w => w._id === wp._id ? updated : w));
   };
 
   const getDirection = (lat: any) => {
@@ -211,7 +211,7 @@ export default function MapPage() {
           console.log('Rendering waypoint with image:', wp.image);
           return (
             <Marker
-              key={wp.id}
+              key={wp._id}
               position={[wp.lat, wp.lng]}
               icon={waypointIcon}
               draggable={isEditingMode}
@@ -219,8 +219,8 @@ export default function MapPage() {
                 contextmenu: () => {
                   // eslint-disable-next-line no-restricted-globals
                   if (confirm('Delete this waypoint?')) {
-                    API.delete(`/api/waypoints/${wp.id}`).then(() => {
-                      setWaypoints(prev => prev.filter(p => p.id !== wp.id));
+                    API.delete(`/api/waypoints/${wp._id}`).then(() => {
+                      setWaypoints(prev => prev.filter(p => p._id !== wp._id));
                     });
                   }
                 },
@@ -285,7 +285,7 @@ export default function MapPage() {
                 width: '100%',
                 borderRadius: '8px',
                 marginBottom: '0.5em',
-                objectFit: 'cover'
+                objectFit: 'cover' // Makes the image look nice if sizing varies
               }}
             />
           )}
@@ -300,7 +300,7 @@ export default function MapPage() {
             </p>
           )}
           <a
-            href={`/journal/${selectedWaypoint.id}`}
+            href={`/journal/${selectedWaypoint._id}`}
             style={{
               color: '#FBEAEB',
               textDecoration: 'underline',
