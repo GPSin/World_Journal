@@ -7,7 +7,7 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Upload a single image to Supabase
-router.post('/upload-image', upload.single('file'), async (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
     try {
       const file = req.file;
       const { waypointId } = req.body;
