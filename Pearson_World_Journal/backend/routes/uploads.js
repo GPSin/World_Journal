@@ -7,7 +7,10 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Upload a single image to Supabase
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', upload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'waypointId', maxCount: 1 },
+  ]), async (req, res) => {
     try {
       const file = req.file;
       const { waypointId } = req.body;
@@ -19,7 +22,7 @@ router.post('/', upload.single('file'), async (req, res) => {
       const filePath = `waypoints/${waypointId}/${Date.now()}-${file.originalname}`;
   
       const { data, error } = await supabase.storage
-        .from('images') // Make sure 'images' bucket exists in Supabase
+        .from('images')
         .upload(filePath, file.buffer, {
           contentType: file.mimetype,
         });
