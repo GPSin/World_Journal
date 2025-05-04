@@ -31,8 +31,8 @@ app.get('/', (req, res) => {
   res.send('🌍 World Journal API is running!');
 });
 
-app.use('/api/waypoints', waypointsRouter);
-app.use('/api/upload-image', uploadsRouter);
+app.use('/waypoints', waypointsRouter);
+app.use('/upload-image', uploadsRouter);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
