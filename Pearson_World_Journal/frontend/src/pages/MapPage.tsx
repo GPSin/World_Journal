@@ -74,14 +74,18 @@ export default function MapPage() {
 
     if (formData.imageFile) {
       const uploadData = new FormData();
-      uploadData.append('images', formData.imageFile);
+      uploadData.append('file', formData.imageFile);
+    
+      const waypointId = editingWaypoint?.id || `temp-${Date.now()}`;
+      uploadData.append('waypointId', waypointId);
+    
       const res = await API.post('/upload-image', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      // Log the URL returned by the backend
-      console.log('Image URL returned from backend:', res.data.urls[0]);
-
-      imageUrl = `${BACKEND_URL}${res.data.urls[0]}`;
+    
+      console.log('Image URL returned from backend:', res.data.imageUrl);
+    
+      imageUrl = res.data.imageUrl;
     }
 
     // Log the image URL that will be used
