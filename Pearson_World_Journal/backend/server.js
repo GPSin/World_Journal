@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3001;
 const allowedOrigins = [
   'http://localhost:3000',
   'https://world-journal.vercel.app',
+  'https://world-journal-5mriqnitw-gps-projects-201f21a0.vercel.app'
 ];
 
 app.use(cors({

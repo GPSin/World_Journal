@@ -7,25 +7,34 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Upload a single image to Supabase
-router.post('/', upload.single('image'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
-  const ext = path.extname(req.file.originalname);
-  const fileName = `${Date.now()}-${Math.random()}${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from('images')
-    .upload(fileName, req.file.buffer, {
-      contentType: req.file.mimetype,
-    });
-
-  if (uploadError) return res.status(500).json({ error: uploadError.message });
-
-  const { data: { publicUrl } } = supabase.storage
-    .from('images')
-    .getPublicUrl(fileName);
-
-  res.status(200).json({ url: publicUrl });
+router.post('/upload-image', upload.single('file'), async (req, res) => {
+    try {
+      const file = req.file;
+      const { waypointId } = req.body;
+  
+      if (!file || !waypointId) {
+        return res.status(400).json({ error: 'Missing file or waypointId' });
+      }
+  
+      const filePath = `waypoints/${waypointId}/${Date.now()}-${file.originalname}`;
+  
+      const { data, error } = await supabase.storage
+        .from('images') // Make sure 'images' bucket exists in Supabase
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+        });
+  
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+  
+      const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/${data.path}`;
+  
+      res.json({ imageUrl: publicUrl });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Upload failed' });
+    }
 });
 
 // Delete image from Supabase

@@ -22,7 +22,6 @@ backend/waypoints.json
 
 /backend/waypoints.db
 /backend/.env
-/frontend/.env
 
 /scripts
 
