@@ -3,21 +3,21 @@ import {
 } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import API from './api';
+import API from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import L, { LatLngExpression, LeafletMouseEvent, Icon } from 'leaflet';
 import styles from './MapPage.module.css';
 import './global.css';
 
 interface Waypoint {
-  _id: string;
+  id: string;
   lat: number;
   lng: number;
   title?: string;
   description?: string;
-  image?: string;
-  journalText?: string;
+  imageURL?: string;
   images?: string[];
+  journalText?: string;
 }
 
 const waypointIcon = new Icon({
@@ -46,7 +46,7 @@ export default function MapPage() {
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
-    API.get('/api/waypoints').then(res => setWaypoints(res.data));
+    API.get('/waypoints').then(res => setWaypoints(res.data));
   }, []);
 
   const isValidLatLng = (lat: any, lng: any) => {
@@ -70,12 +70,12 @@ export default function MapPage() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let imageUrl = editingWaypoint?.image;
+    let imageUrl = editingWaypoint?.imageURL;
 
     if (formData.imageFile) {
       const uploadData = new FormData();
       uploadData.append('images', formData.imageFile);
-      const res = await API.post('/api/upload', uploadData, {
+      const res = await API.post('/upload-image', uploadData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       // Log the URL returned by the backend
@@ -94,8 +94,8 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
-      await API.put(`/api/waypoints/${editingWaypoint._id}`, updated);
-      setWaypoints(prev => prev.map(wp => wp._id === updated._id ? updated : wp));
+      await API.put(`/waypoints/${editingWaypoint.id}`, updated);
+      setWaypoints(prev => prev.map(wp => wp.id === updated.id ? updated : wp));
     } else if (newWaypoint) {
       const newWp = {
         ...newWaypoint,
@@ -103,7 +103,7 @@ export default function MapPage() {
         description: formData.description,
         image: imageUrl,
       };
-      const res = await API.post('/api/waypoints', newWp);
+      const res = await API.post('/waypoints', newWp);
       setWaypoints(prev => [...prev, res.data]);
     }
 
@@ -137,8 +137,8 @@ export default function MapPage() {
     const marker = e.target;
     const newPos = marker.getLatLng();
     const updated = { ...wp, lat: newPos.lat, lng: newPos.lng };
-    await API.put(`/api/waypoints/${wp._id}`, updated);
-    setWaypoints(prev => prev.map(w => w._id === wp._id ? updated : w));
+    await API.put(`/waypoints/${wp.id}`, updated);
+    setWaypoints(prev => prev.map(w => w.id === wp.id ? updated : w));
   };
 
   const getDirection = (lat: any) => {
@@ -208,10 +208,10 @@ export default function MapPage() {
           noWrap={true}
         />
         {waypoints.map(wp => {
-          console.log('Rendering waypoint with image:', wp.image);
+          console.log('Rendering waypoint with image:', wp.images);
           return (
             <Marker
-              key={wp._id}
+              key={wp.id}
               position={[wp.lat, wp.lng]}
               icon={waypointIcon}
               draggable={isEditingMode}
@@ -219,8 +219,8 @@ export default function MapPage() {
                 contextmenu: () => {
                   // eslint-disable-next-line no-restricted-globals
                   if (confirm('Delete this waypoint?')) {
-                    API.delete(`/api/waypoints/${wp._id}`).then(() => {
-                      setWaypoints(prev => prev.filter(p => p._id !== wp._id));
+                    API.delete(`/waypoints/${wp.id}`).then(() => {
+                      setWaypoints(prev => prev.filter(p => p.id !== wp.id));
                     });
                   }
                 },
@@ -232,22 +232,10 @@ export default function MapPage() {
               }}
             >
               <Tooltip direction={getDirection(wp.lat)} offset={getDirection(wp.lat) === 'bottom' ? [0, 0] : [0, -30]}  opacity={1} permanent={false}>
-                <div style={{
-                  width: '150px',
-                  backgroundColor: '#2F3C7E',
-                  color: '#FBEAEB',
-                  padding: '10px',
-                  borderRadius: '10px',
-                  fontSize: '1.2em',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                  whiteSpace: 'normal',
-                  overflow: 'hidden',
-                  textAlign: 'center'
-                }}>
-                  {wp.image && (
+                <div style={{width: '150px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', overflow: 'hidden', textAlign: 'center'}}>
+                  {wp.imageURL && (
                     <img
-                      src={getFullImageUrl(wp.image)}
+                      src={getFullImageUrl(wp.imageURL)}
                       alt="Preview"
                       style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
@@ -262,31 +250,12 @@ export default function MapPage() {
 
       {selectedWaypoint && (
         <div style={{
-          position: 'fixed',
-          top: '100px',
-          [selectedWaypoint.lng > 0 ? 'left' : 'right']: '70px',
-          width: '220px',
-          backgroundColor: '#2F3C7E',
-          color: '#FBEAEB',
-          padding: '15px',
-          borderRadius: '10px',
-          zIndex: 1000,
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}>
-          {selectedWaypoint.image && (
+          position: 'fixed', top: '100px', [selectedWaypoint.lng > 0 ? 'left' : 'right']: '70px', width: '220px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '15px', borderRadius: '10px', zIndex: 1000, boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
+          {selectedWaypoint.imageURL && (
             <img
-              src={getFullImageUrl(selectedWaypoint.image)}
+              src={getFullImageUrl(selectedWaypoint.imageURL)}
               alt="Waypoint"
-              style={{
-                width: '100%',
-                borderRadius: '8px',
-                marginBottom: '0.5em',
-                objectFit: 'cover' // Makes the image look nice if sizing varies
-              }}
+              style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em', objectFit: 'cover'}}
             />
           )}
           {selectedWaypoint.title && (
@@ -300,27 +269,14 @@ export default function MapPage() {
             </p>
           )}
           <a
-            href={`/journal/${selectedWaypoint._id}`}
-            style={{
-              color: '#FBEAEB',
-              textDecoration: 'underline',
-              marginTop: '10px'
-            }}
+            href={`/journal/${selectedWaypoint.id}`}
+            style={{ color: '#FBEAEB', textDecoration: 'underline', marginTop: '10px'}}
           >
             View Journal
           </a>
           <button 
             onClick={() => setSelectedWaypoint(null)} 
-            style={{
-              marginTop: '15px',
-              backgroundColor: '#FBEAEB',
-              color: '#2F3C7E',
-              border: 'none',
-              borderRadius: '5px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
+            style={{marginTop: '15px', backgroundColor: '#FBEAEB', color: '#2F3C7E', border: 'none', borderRadius: '5px', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold'}}
           >
             Close
           </button>
@@ -347,13 +303,7 @@ export default function MapPage() {
                 <img
                   src={previewUrl}
                   alt="Selected"
-                  style={{
-                    maxWidth: '300px',
-                    maxHeight: '350px',
-                    borderRadius: '12px',
-                    marginBottom: '1em',
-                    marginTop: '1em'
-                  }}
+                  style={{maxWidth: '300px', maxHeight: '350px', borderRadius: '12px', marginBottom: '1em', marginTop: '1em'}}
                 />
               </div>
             )}
@@ -383,13 +333,7 @@ export default function MapPage() {
             <button
               className={styles.cancel}
               type="button"
-              onClick={() => {
-                setShowModal(false);
-                setEditingWaypoint(null);
-                setNewWaypoint(null);
-                setFormData({ title: '', description: '', imageFile: null });
-                setPreviewUrl(null);
-            }}
+              onClick={() => {setShowModal(false); setEditingWaypoint(null); setNewWaypoint(null); setFormData({ title: '', description: '', imageFile: null }); setPreviewUrl(null);}}
           >
               Cancel</button>
             </div>

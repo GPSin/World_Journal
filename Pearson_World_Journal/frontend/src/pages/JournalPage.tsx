@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import API from './api';
 import styles from './JournalPage.module.css'; // Import CSS Module
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
 
 interface Waypoint {
-  _id: string;
+  id: string;
   lat: number;
   lng: number;
   description?: string;
@@ -24,9 +29,6 @@ export default function JournalPage() {
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
   const [showInstructions, setShowInstructions] = useState(false);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-
-
   type FilePreview = {
     file: File;
     previewUrl: string;
@@ -36,62 +38,64 @@ export default function JournalPage() {
 
   // Fetch waypoint data from API
   useEffect(() => {
-    API.get(`/api/waypoints`).then(res => {
-      const wp = res.data.find((w: Waypoint) => w._id === id);
-      if (wp) {
-        setWaypoint(wp);
-        setJournalText(wp.journalText || '');
-        setImages(wp.images || []);
-      }
-    });
-  }, [id]);
+    const fetchWaypoint = async () => {
+      const { data, error } = await supabase
+        .from('waypoints')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-  useEffect(() => {
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges && pendingDeletes.length) {
-        e.preventDefault();
-        e.returnValue = '';
-  
-        // Try to restore deleted images
-        for (const imageUrl of pendingDeletes) {
-          try {
-            await API.post('/api/restore-image', { imageUrl });
-          } catch (err) {
-            console.warn('Failed to restore image on unload:', imageUrl);
-          }
-        }
+      if (error) {
+        console.error('Error fetching waypoint:', error.message);
+      } else if (data) {
+        setWaypoint(data);
+        setJournalText(data.journalText || '');
+        setImages(data.images || []);
       }
     };
-  
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges, pendingDeletes]);
-   
+
+    fetchWaypoint();
+  }, [id]);
 
   // Save journal entry and images to the API
   const handleSave = async () => {
     setUploading(true);
     try {
       let uploadedImages: string[] = [];
-  
+
+      // Upload images to Supabase
       if (filePreviews.length) {
-        const formData = new FormData();
-        filePreviews.forEach(fp => formData.append('images', fp.file));
-  
-        const res = await API.post('/api/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-  
-        uploadedImages = res.data.urls;
+        for (const { file } of filePreviews) {
+          const filePath = `waypoints/${id}/${file.name}`;
+
+          const { data, error } = await supabase.storage
+            .from('images')
+            .upload(filePath, file);
+
+          if (error) {
+            throw error;
+          }
+
+          const fileUrl = `${supabaseUrl}/storage/v1/object/public/${data.path}`;
+          uploadedImages.push(fileUrl);
+        }
       }
-  
+
       const allImages = [...images, ...uploadedImages];
-  
-      await API.put(`/api/waypoints/${id}`, {
-        journalText,
-        images: allImages
-      });
-  
+
+      // Update waypoint in Supabase
+      const { error } = await supabase
+        .from('waypoints')
+        .update({
+          journalText,
+          images: allImages,
+        })
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
       setImages(allImages);
       setFilePreviews([]);
       setHasUnsavedChanges(false);
@@ -102,7 +106,7 @@ export default function JournalPage() {
       setPendingDeletes([]);
       setUploading(false);
     }
-  };  
+  };
 
   // Handle file selection and preview generation
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,16 +124,27 @@ export default function JournalPage() {
   // Delete an image from the server and the local state
   const handleImageDelete = async (imageUrl: string, index: number) => {
     try {
-      await API.delete('/api/delete-image', { data: { imageUrl } });
+      // Extract file path from the URL (e.g., 'waypoints/{id}/{filename}')
+      const path = imageUrl.replace(`${supabaseUrl}/storage/v1/object/public/`, '');
   
+      const { error } = await supabase.storage
+        .from('images')
+        .remove([path]);
+  
+      if (error) {
+        throw error;
+      }
+  
+      // Remove the image from local state and mark it as pending delete
       setImages(prev => prev.filter((_, i) => i !== index));
-      setPendingDeletes(prev => [...prev, imageUrl]); // 👈 store it for possible restore
+      setPendingDeletes(prev => [...prev, imageUrl]);
       setHasUnsavedChanges(true);
     } catch (err: any) {
       alert('Failed to delete the image.');
       console.error('Error deleting image:', err);
     }
   };
+  
   
 
   const handlePreviewDelete = (index: number) => {
@@ -147,7 +162,7 @@ export default function JournalPage() {
       // Restore any deleted images
       for (const imageUrl of pendingDeletes) {
         try {
-          await fetch('/api/restore-image', {
+          await fetch('/restore-image', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -167,11 +182,13 @@ export default function JournalPage() {
   };
   
   const getFullImageUrl = (path: string) => {
+    // If the image path starts with 'http', return it directly.
     if (path.startsWith('http')) {
       return path;
     }
-    return `${BACKEND_URL}${path}`;
-  };
+    // Otherwise, construct the Supabase storage URL
+    return `${supabaseUrl}/storage/v1/object/public/${path}`;
+  }
   
   if (!waypoint) return <p>Loading...</p>;
 
