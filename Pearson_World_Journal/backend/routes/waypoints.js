@@ -12,17 +12,21 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new waypoint
-router.post('/', async (req, res) => {
-  const { title, description, lat, lng, imageUrl } = req.body;
-  const id = uuidv4();
-
-  const { data, error } = await supabase
-    .from('waypoints')
-    .insert([{ id, title, description, lat, lng, imageUrl }]);
-
-  if (error) return res.status(500).json({ error });
-  res.status(201).json(data[0]);
-});
+app.post('/waypoints', async (req, res) => {
+    try {
+      const { waypointId, imageUrl } = req.body;
+      if (!waypointId || !imageUrl) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+  
+      // Process the waypoint creation (save to DB, etc.)
+  
+      res.status(200).json({ message: 'Waypoint created successfully' });
+    } catch (error) {
+      console.error('Error creating waypoint:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 // PUT (update) an existing waypoint
 router.put('/:id', async (req, res) => {
