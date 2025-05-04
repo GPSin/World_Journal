@@ -76,12 +76,10 @@ export default function MapPage() {
       const uploadData = new FormData();
       uploadData.append('file', formData.imageFile);
     
-      const waypointId = editingWaypoint?.id || `temp-${Date.now()}`;
+      const waypointId = (editingWaypoint?.id || `temp-${Date.now()}`).toString();
       uploadData.append('waypointId', waypointId);
     
-      const res = await API.post('/upload-image', uploadData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await API.post('/upload-image', uploadData);
     
       console.log('Image URL returned from backend:', res.data.imageUrl);
     

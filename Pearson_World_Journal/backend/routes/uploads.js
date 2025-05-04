@@ -11,6 +11,8 @@ router.post('/', upload.fields([
     { name: 'file', maxCount: 1 },
     { name: 'waypointId', maxCount: 1 },
   ]), async (req, res) => {
+    console.log('Files:', req.files);
+    console.log('Body:', req.body)
     try {
       const file = req.file;
       const { waypointId } = req.body;
