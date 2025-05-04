@@ -30,6 +30,7 @@ router.post('/', upload.fields([
         });
   
       if (error) {
+        console.error('Supabase upload error:', error);
         return res.status(500).json({ error: error.message });
       }
   
