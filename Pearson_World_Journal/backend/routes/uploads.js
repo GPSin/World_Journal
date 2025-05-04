@@ -14,7 +14,7 @@ router.post('/', upload.fields([
     console.log('Files:', req.files);
     console.log('Body:', req.body)
     try {
-      const file = req.file;
+      const file = req.files?.file?.[0];
       const { waypointId } = req.body;
   
       if (!file || !waypointId) {
