@@ -34,7 +34,8 @@ router.post('/', upload.fields([
         return res.status(500).json({ error: error.message });
       }
   
-      const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/${data.path}`;
+      
+      const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/images/${data.path}`;
   
       res.json({ imageUrl: publicUrl });
     } catch (err) {
