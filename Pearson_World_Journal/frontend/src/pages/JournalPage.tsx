@@ -76,7 +76,7 @@ export default function JournalPage() {
             throw error;
           }
 
-          const fileUrl = `${supabaseUrl}/storage/v1/object/public/${data.path}`;
+          const fileUrl = `${supabaseUrl}/storage/v1/object/public/images/${data.path}`;
           uploadedImages.push(fileUrl);
         }
       }
