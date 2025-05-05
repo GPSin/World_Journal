@@ -125,18 +125,20 @@ export default function JournalPage() {
   // Delete an image from the server and the local state
   const handleImageDelete = async (imageUrl: string, index: number) => {
     try {
-      // Extract file path from the URL (e.g., 'waypoints/{id}/{filename}')
-      const path = imageUrl.replace(`${supabaseUrl}/storage/v1/object/public/`, '');
+      const waypointId = waypoint?.id;
+      const response = await fetch('/api/upload', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl, waypointId }),
+      });
   
-      const { error } = await supabase.storage
-        .from('images')
-        .remove([path]);
+      const result = await response.json();
   
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        throw new Error(result.error || 'Server error');
       }
   
-      // Remove the image from local state and mark it as pending delete
+      // Update local UI
       setImages(prev => prev.filter((_, i) => i !== index));
       setPendingDeletes(prev => [...prev, imageUrl]);
       setHasUnsavedChanges(true);
