@@ -12,8 +12,6 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new waypoint
-const { v4: uuidv4 } = require('uuid');
-
 router.post('/', async (req, res) => {
   const { title, description, lat, lng, imageUrl, images, journal } = req.body;
 
@@ -23,11 +21,14 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Missing required fields.' });
   }
 
+  const id = uuidv4();  // Generate UUID here
+
   const { data, error } = await supabase
-    .from('waypoints')
-    .insert([{
-      id, title, description, lat, lng, imageUrl, images: images || null, journal: journal || null
-    }]);
+  .from('waypoints')
+  .insert([{
+    id, title, description, lat, lng, imageUrl, images: images || null, journal: journal || null
+  }])
+  .select();
 
   if (error) {
     console.error('Supabase insert error:', error);
