@@ -103,7 +103,7 @@ export default function MapPage() {
         ...newWaypoint,
         title: formData.title,
         description: formData.description,
-        image: imageUrl,
+        imageUrl: imageUrl,
       };
       const res = await API.post('/waypoints', newWp);
       setWaypoints(prev => [...prev, res.data]);
