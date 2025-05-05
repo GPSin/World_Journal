@@ -46,51 +46,18 @@ router.post('/', upload.fields([
 
 // Delete image from Supabase
 router.delete('/', async (req, res) => {
-  const { imageUrl, waypointId } = req.body;
-  console.log('Received delete request:', { imageUrl, waypointId });
+  const { imageUrl } = req.body;
+  if (!imageUrl) return res.status(400).json({ error: 'Image URL is required' });
 
-  if (!imageUrl || !waypointId) {
-    console.error('Missing imageUrl or waypointId');
-    return res.status(400).json({ error: 'Image URL and waypoint ID are required' });
-  }
+  const parts = imageUrl.split('/');
+  const fileName = parts[parts.length - 1];
 
-  const filePath = imageUrl.replace(`${supabaseUrl}/storage/v1/object/public/images/`, '');
-  console.log('Computed filePath:', filePath);
+  const { error } = await supabase.storage
+    .from('images')
+    .remove([fileName]);
 
-  // Delete from storage
-  const { error: storageError } = await supabase.storage.from('images').remove([filePath]);
-  if (storageError) {
-    console.error('Storage deletion error:', storageError);
-    return res.status(500).json({ error: storageError.message });
-  }
-
-  // Fetch waypoint
-  const { data, error: fetchError } = await supabase
-    .from('waypoints')
-    .select('images')
-    .eq('id', waypointId)
-    .single();
-
-  if (fetchError) {
-    console.error('Fetch waypoint error:', fetchError);
-    return res.status(500).json({ error: fetchError.message });
-  }
-
-  const updatedImages = data.images.filter((img) => img !== filePath);
-  console.log('Updated image array:', updatedImages);
-
-  // Update the waypoint
-  const { error: updateError } = await supabase
-    .from('waypoints')
-    .update({ images: updatedImages })
-    .eq('id', waypointId);
-
-  if (updateError) {
-    console.error('Update waypoint error:', updateError);
-    return res.status(500).json({ error: updateError.message });
-  }
-
-  res.status(200).json({ message: 'Image deleted from storage and database' });
+  if (error) return res.status(500).json({ error });
+  res.status(200).json({ message: 'Image deleted' });
 });
 
 export default router;

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './JournalPage.module.css'; // Import CSS Module
@@ -124,27 +125,19 @@ export default function JournalPage() {
 
   // Delete an image from the server and the local state
   const handleImageDelete = async (imageUrl: string, index: number) => {
-    if (!waypoint?.id) {
-      alert('Waypoint ID not loaded yet.');
-      console.error('Waypoint ID missing');
-      return;
-    }
-  
     try {
-      const waypointId = waypoint.id;
+      // Extract file path from the URL (e.g., 'waypoints/{id}/{filename}')
+      const path = imageUrl.replace(`${supabaseUrl}/storage/v1/object/public/`, '');
   
-      const response = await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl, waypointId }),
-      });
+      const { error } = await supabase.storage
+        .from('images')
+        .remove([path]);
   
-      const result = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(result.error || 'Server error');
+      if (error) {
+        throw error;
       }
   
+      // Remove the image from local state and mark it as pending delete
       setImages(prev => prev.filter((_, i) => i !== index));
       setPendingDeletes(prev => [...prev, imageUrl]);
       setHasUnsavedChanges(true);
