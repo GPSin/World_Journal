@@ -124,8 +124,15 @@ export default function JournalPage() {
 
   // Delete an image from the server and the local state
   const handleImageDelete = async (imageUrl: string, index: number) => {
+    if (!waypoint?.id) {
+      alert('Waypoint ID not loaded yet.');
+      console.error('Waypoint ID missing');
+      return;
+    }
+  
     try {
-      const waypointId = waypoint?.id;
+      const waypointId = waypoint.id;
+  
       const response = await fetch('/api/upload', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -138,7 +145,6 @@ export default function JournalPage() {
         throw new Error(result.error || 'Server error');
       }
   
-      // Update local UI
       setImages(prev => prev.filter((_, i) => i !== index));
       setPendingDeletes(prev => [...prev, imageUrl]);
       setHasUnsavedChanges(true);
