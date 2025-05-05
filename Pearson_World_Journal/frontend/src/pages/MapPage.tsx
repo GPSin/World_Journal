@@ -15,7 +15,7 @@ interface Waypoint {
   lng: number;
   title?: string;
   description?: string;
-  imageURL?: string;
+  imageUrl?: string;
   images?: string[];
   journalText?: string;
 }
@@ -70,7 +70,7 @@ export default function MapPage() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let imageUrl = editingWaypoint?.imageURL;
+    let imageUrl = editingWaypoint?.imageUrl;
 
     if (formData.imageFile) {
       const uploadData = new FormData();
@@ -235,9 +235,9 @@ export default function MapPage() {
             >
               <Tooltip direction={getDirection(wp.lat)} offset={getDirection(wp.lat) === 'bottom' ? [0, 0] : [0, -30]}  opacity={1} permanent={false}>
                 <div style={{width: '150px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', overflow: 'hidden', textAlign: 'center'}}>
-                  {wp.imageURL && (
+                  {wp.imageUrl && (
                     <img
-                      src={getFullImageUrl(wp.imageURL)}
+                      src={getFullImageUrl(wp.imageUrl)}
                       alt="Preview"
                       style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
@@ -253,9 +253,9 @@ export default function MapPage() {
       {selectedWaypoint && (
         <div style={{
           position: 'fixed', top: '100px', [selectedWaypoint.lng > 0 ? 'left' : 'right']: '70px', width: '220px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '15px', borderRadius: '10px', zIndex: 1000, boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
-          {selectedWaypoint.imageURL && (
+          {selectedWaypoint.imageUrl && (
             <img
-              src={getFullImageUrl(selectedWaypoint.imageURL)}
+              src={getFullImageUrl(selectedWaypoint.imageUrl)}
               alt="Waypoint"
               style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em', objectFit: 'cover'}}
             />

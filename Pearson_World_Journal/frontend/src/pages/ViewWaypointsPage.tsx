@@ -13,7 +13,7 @@ interface Waypoint {
   lng: number;
   title: string;
   description: string;
-  imageURL?: string;
+  imageUrl?: string;
   images?: string[];
 }
 
@@ -136,7 +136,7 @@ const ViewWaypointsPage = () => {
               </button>
             )}
             <img
-              src={waypoint.imageURL ? getFullImageUrl(waypoint.imageURL) : '/path/to/default-image.jpg'}
+              src={waypoint.imageUrl ? getFullImageUrl(waypoint.imageUrl) : '/path/to/default-image.jpg'}
               alt={waypoint.title}
               className={styles['waypoint-image']}
             />
