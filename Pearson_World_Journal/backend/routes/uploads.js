@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { supabase } from '../supabaseClient.js';
+import path from 'path';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -32,6 +33,7 @@ router.post('/', upload.fields([
         console.error('Supabase upload error:', error);
         return res.status(500).json({ error: error.message });
       }
+  
       
       const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/images/${data.path}`;
   
@@ -47,11 +49,12 @@ router.delete('/', async (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ error: 'Image URL is required' });
 
-  const path = imageUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/`, '');
+  const parts = imageUrl.split('/');
+  const fileName = parts[parts.length - 1];
 
   const { error } = await supabase.storage
     .from('images')
-    .remove([path]);
+    .remove([fileName]);
 
   if (error) return res.status(500).json({ error });
   res.status(200).json({ message: 'Image deleted' });
