@@ -105,7 +105,7 @@ router.delete('/:id', async (req, res) => {
   // Step 2: Delete image from storage if it exists
   if (waypoint?.imageUrl) {
     // Extract just the path from full URL
-    const path = waypoint.imageUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/images/`, '');
+    const path = waypoint.imageUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/`, '');
 
     const { error: deleteImageError } = await supabase.storage
       .from('images')
