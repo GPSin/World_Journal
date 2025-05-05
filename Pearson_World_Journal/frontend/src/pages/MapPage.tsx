@@ -116,6 +116,8 @@ export default function MapPage() {
   };
 
   const getFullImageUrl = (path: string) => {
+    console.log("imageURL without FullURL: " + path)
+    console.log("imageURL with FullURL: " + `${BACKEND_URL}${path}`)
     if (path.startsWith('http')) {
       return path;
     }
