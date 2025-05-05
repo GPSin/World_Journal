@@ -14,14 +14,23 @@ router.get('/', async (req, res) => {
 // POST a new waypoint
 router.post('/', async (req, res) => {
   const { title, description, lat, lng, imageUrl } = req.body;
-  const id = uuidv4();
 
-  console.log('Incoming waypoint:', { title, description, lat, lng, imageUrl });
+  console.log('Received waypoint:', req.body);
+
+  if (!title || !lat || !lng || !imageUrl) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+
+  const id = uuidv4();
   const { data, error } = await supabase
     .from('waypoints')
     .insert([{ id, title, description, lat, lng, imageUrl }]);
 
-  if (error) return res.status(500).json({ error });
+  if (error) {
+    console.error('Supabase insert error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+
   res.status(201).json(data[0]);
 });
 

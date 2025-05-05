@@ -94,7 +94,7 @@ export default function MapPage() {
         ...editingWaypoint,
         title: formData.title,
         description: formData.description,
-        image: imageUrl,
+        imageUrl: imageUrl,
       };
       await API.put(`/waypoints/${editingWaypoint.id}`, updated);
       setWaypoints(prev => prev.map(wp => wp.id === updated.id ? updated : wp));
