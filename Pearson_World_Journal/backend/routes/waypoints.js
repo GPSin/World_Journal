@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
 
   console.log('Received waypoint:', req.body);
 
-  if (!title || !lat || !lng || !imageUrl) {
+  if (!lat || !lng) {
     return res.status(400).json({ error: 'Missing required fields.' });
   }
 
@@ -47,13 +47,41 @@ router.put('/:id', async (req, res) => {
   console.log('Updating waypoint with ID:', id);
   console.log('Update payload:', updates);
 
-  const { data, error } = await supabase
+  // Step 1: Fetch current waypoint to get existing image
+  const { data: existingWaypoint, error: fetchError } = await supabase
+    .from('waypoints')
+    .select('image')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    return res.status(500).json({ error: 'Failed to fetch existing waypoint' });
+  }
+
+  const oldImageUrl = existingWaypoint?.image;
+  const newImageUrl = updates.image;
+
+  // Step 2: If new image is different, delete the old one
+  if (oldImageUrl && newImageUrl && oldImageUrl !== newImageUrl) {
+    const path = oldImageUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/`, '');
+    const { error: deleteError } = await supabase.storage
+      .from('images')
+      .remove([path]);
+
+    if (deleteError) {
+      console.error('Failed to delete old image:', deleteError);
+      // Proceed anyway; don’t block the update
+    }
+  }
+
+  // Step 3: Update the waypoint
+  const { data, error: updateError } = await supabase
     .from('waypoints')
     .update(updates)
     .eq('id', id)
-    .select(); // Ensures data is returned
+    .select();
 
-  if (error) return res.status(500).json({ error });
+  if (updateError) return res.status(500).json({ error: updateError });
   if (!data || data.length === 0) {
     return res.status(404).json({ error: 'Waypoint not found or update failed.' });
   }
@@ -65,13 +93,40 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
-  const { error } = await supabase
+  // Step 1: Fetch the waypoint to get the image URL
+  const { data: waypoint, error: fetchError } = await supabase
+    .from('waypoints')
+    .select('image')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) return res.status(500).json({ error: 'Failed to fetch waypoint image' });
+
+  // Step 2: Delete image from storage if it exists
+  if (waypoint?.imageUrl) {
+    // Extract just the path from full URL
+    const path = waypoint.imageUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/images/`, '');
+
+    const { error: deleteImageError } = await supabase.storage
+      .from('images')
+      .remove([path]);
+
+    if (deleteImageError) {
+      console.error('Failed to delete associated image:', deleteImageError);
+      // Don’t fail deletion if image cleanup fails, just log
+    }
+  }
+
+  // Step 3: Delete the waypoint from the table
+  const { error: deleteError } = await supabase
     .from('waypoints')
     .delete()
     .eq('id', id);
 
-  if (error) return res.status(500).json({ error });
+  if (deleteError) return res.status(500).json({ error: deleteError });
+
   res.sendStatus(204);
 });
+
 
 export default router;

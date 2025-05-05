@@ -49,12 +49,11 @@ router.delete('/', async (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ error: 'Image URL is required' });
 
-  const parts = imageUrl.split('/');
-  const fileName = parts[parts.length - 1];
+  const path = imageUrl.replace(`${process.env.SUPABASE_URL}/storage/v1/object/public/images/`, '');
 
   const { error } = await supabase.storage
     .from('images')
-    .remove([fileName]);
+    .remove([path]);
 
   if (error) return res.status(500).json({ error });
   res.status(200).json({ message: 'Image deleted' });

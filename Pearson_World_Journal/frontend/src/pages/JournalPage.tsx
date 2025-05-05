@@ -145,8 +145,6 @@ export default function JournalPage() {
       console.error('Error deleting image:', err);
     }
   };
-  
-  
 
   const handlePreviewDelete = (index: number) => {
     setFilePreviews(prev => prev.filter((_, i) => i !== index));
