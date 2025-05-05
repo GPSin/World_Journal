@@ -210,7 +210,6 @@ export default function MapPage() {
           noWrap={true}
         />
         {waypoints.map(wp => {
-          console.log('Rendering waypoint with image:', wp.images);
           return (
             <Marker
               key={wp.id}
@@ -237,7 +236,7 @@ export default function MapPage() {
                 <div style={{width: '150px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', overflow: 'hidden', textAlign: 'center'}}>
                   {wp.imageUrl && (
                     <img
-                      src={getFullImageUrl(wp.imageUrl)}
+                      src={wp.imageUrl}
                       alt="Preview"
                       style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
