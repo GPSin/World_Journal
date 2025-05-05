@@ -44,12 +44,20 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
 
+  console.log('Updating waypoint with ID:', id);
+  console.log('Update payload:', updates);
+
   const { data, error } = await supabase
     .from('waypoints')
     .update(updates)
-    .eq('id', id);
+    .eq('id', id)
+    .select(); // Ensures data is returned
 
   if (error) return res.status(500).json({ error });
+  if (!data || data.length === 0) {
+    return res.status(404).json({ error: 'Waypoint not found or update failed.' });
+  }
+
   res.json(data[0]);
 });
 
