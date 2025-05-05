@@ -12,8 +12,6 @@ router.get('/', async (req, res) => {
 });
 
 // POST a new waypoint
-const { v4: uuidv4 } = require('uuid');
-
 router.post('/', async (req, res) => {
   const { title, description, lat, lng, imageUrl, images, journal } = req.body;
 
