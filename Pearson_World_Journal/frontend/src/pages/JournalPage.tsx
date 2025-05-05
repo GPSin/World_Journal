@@ -222,7 +222,7 @@ export default function JournalPage() {
         className={`${styles.fixedButton} ${styles.deleteButton}`}
         onClick={() => setDeleteMode(prev => !prev)}
       >
-        {DeleteMode ? 'Cancel Deletion' : 'Delete Waypoints'}
+        {DeleteMode ? 'Cancel Deletion' : 'Delete Images'}
       </button>
 
       <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
@@ -254,12 +254,14 @@ export default function JournalPage() {
               className={styles.image}
               onClick={() => setZoomedImage(getFullImageUrl(img))}
             />
-            <button
-              onClick={() => handleImageDelete(img, i)}
-              className={styles.deleteIcon}
-            >
-              ×
-            </button>
+            {DeleteMode && (
+              <button
+                onClick={() => handleImageDelete(img, i)}
+                className={styles.deleteIcon}
+              >
+                ×
+              </button>
+            )}
           </div>
         ))}
       </div>
