@@ -13,7 +13,7 @@ interface Waypoint {
   lat: number;
   lng: number;
   description?: string;
-  journalText?: string;
+  journal?: string;
   images?: string[];
 }
 
@@ -21,7 +21,7 @@ export default function JournalPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [waypoint, setWaypoint] = useState<Waypoint | null>(null);
-  const [journalText, setJournalText] = useState('');
+  const [journal, setjournal] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export default function JournalPage() {
         console.error('Error fetching waypoint:', error.message);
       } else if (data) {
         setWaypoint(data);
-        setJournalText(data.journalText || '');
+        setjournal(data.journal || '');
         setImages(data.images || []);
       }
     };
@@ -87,7 +87,7 @@ export default function JournalPage() {
       const { error } = await supabase
         .from('waypoints')
         .update({
-          journalText,
+          journal,
           images: allImages,
         })
         .eq('id', id);
@@ -227,8 +227,8 @@ export default function JournalPage() {
 
       <textarea
         className={styles.textarea}
-        value={journalText}
-        onChange={e => setJournalText(e.target.value)}
+        value={journal}
+        onChange={e => setjournal(e.target.value)}
         placeholder="Write your journal entry here..."
       />
 

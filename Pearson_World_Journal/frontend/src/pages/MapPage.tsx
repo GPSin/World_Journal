@@ -17,7 +17,7 @@ interface Waypoint {
   description?: string;
   imageUrl?: string;
   images?: string[];
-  journalText?: string;
+  journal?: string;
 }
 
 const waypointIcon = new Icon({

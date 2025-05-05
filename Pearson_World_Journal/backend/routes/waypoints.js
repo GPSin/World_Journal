@@ -22,17 +22,24 @@ router.post('/', async (req, res) => {
   }
 
   const id = uuidv4();
+
   const { data, error } = await supabase
     .from('waypoints')
-    .insert([{ id, title, description, lat, lng, imageUrl }]);
+    .insert([{ id, title, description, lat, lng, imageUrl }], { returning: 'representation' });
 
   if (error) {
     console.error('Supabase insert error:', error);
     return res.status(500).json({ error: error.message });
   }
 
+  if (!data || !data[0]) {
+    console.error('Insert returned no data:', data);
+    return res.status(500).json({ error: 'Insert succeeded but returned no data.' });
+  }
+
   res.status(201).json(data[0]);
 });
+
 
 // PUT (update) an existing waypoint
 router.put('/:id', async (req, res) => {
