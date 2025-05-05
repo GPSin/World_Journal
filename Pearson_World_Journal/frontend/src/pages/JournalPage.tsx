@@ -26,6 +26,7 @@ export default function JournalPage() {
   const [uploading, setUploading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [DeleteMode, setDeleteMode] = useState(false);
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
   const [showInstructions, setShowInstructions] = useState(false);
 
@@ -208,11 +209,22 @@ export default function JournalPage() {
               will save them to the journal until you choose to remove them.
               <br />
               <br />
-              Saving is very important so don't forget to do it, there are plenty of checks to ensure you're happy with your journal before you leave the page!
+              The "Delete Waypoints" will allow you to delete waypoints when toggled. Don't forget to turn it off when you're done.
+              <br />
+              <br />
+              Saving is very important so don't forget to do it
             </p>
           </div>
         </div>
       )}
+
+      <button
+        className={`${styles.fixedButton} ${styles.deleteButton}`}
+        onClick={() => setDeleteMode(prev => !prev)}
+      >
+        {DeleteMode ? 'Cancel Deletion' : 'Delete Waypoints'}
+      </button>
+
       <button className={`${styles.fixedButton} ${styles.hideInstructionsButton}`} onClick={() => setShowInstructions(prev => !prev)}>
         {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
       </button>
@@ -244,7 +256,7 @@ export default function JournalPage() {
             />
             <button
               onClick={() => handleImageDelete(img, i)}
-              className={styles.deleteButton}
+              className={styles.deleteIcon}
             >
               ×
             </button>
@@ -257,7 +269,7 @@ export default function JournalPage() {
         {filePreviews.map((fp, i) => (
           <div key={i} className={styles.imageWrapper}>
             <img src={fp.previewUrl} alt={`preview-${i}`} className={styles.image} onClick={() => setZoomedImage(fp.previewUrl)} />
-            <button onClick={() => handlePreviewDelete(i)} className={styles.deleteButton}>×</button>
+            <button onClick={() => handlePreviewDelete(i)} className={styles.deleteIcon}>×</button>
           </div>
         ))}
       </div>

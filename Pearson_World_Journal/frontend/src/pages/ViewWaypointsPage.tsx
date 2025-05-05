@@ -22,7 +22,7 @@ const ViewWaypointsPage = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [loading, setLoading] = useState(true); // Loading state
-  const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null); // Confirmation message
+  const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const getFullImageUrl = (path: string) => {

@@ -113,7 +113,7 @@ body {
   margin-top: 0.75rem;
 }
 
-.deleteButton {
+.deleteIcon {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -183,6 +183,10 @@ body {
 
 .fixedButton:hover {
   background-color: #0056b3;
+}
+
+.deleteButton {
+  bottom: 104px;
 }
 
 .hideInstructionsButton {
