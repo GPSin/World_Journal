@@ -75,10 +75,10 @@
   opacity: 0.9;
   background-color: #0056b3;
 }
-  
+
 .fixedButton {
   position: fixed;
-  left: 20px;
+  left: .5%;
   z-index: 1000;
   background-color: #2F3C7E;
   color: #FBEAEB;
@@ -96,21 +96,19 @@
 }
 
 .editButtonFixed {
-  bottom: 104px;
+  bottom: 6.5rem;
 }
 
 .hideInstructionsButton {
-  bottom: 62px;
+  bottom: 3.86rem;
 }
 
 .viewButtonFixed {
-  bottom: 20px;
+  bottom: 1.25rem;
 }
 
 .instructionsContainer {
   position: fixed;
-  top: 720px;
-  right: 70px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -118,6 +116,9 @@
 }
 
 .instructionBox {
+  position: fixed;
+  bottom: 1.25rem;
+  right: .5%;
   background-color: #2F3C7E;
   color: #FBEAEB; 
   border-radius: 12px;
@@ -127,7 +128,6 @@
   font-size: 14px;
   text-align: center;
 } 
-
 
 @keyframes fadeIn {
   from {

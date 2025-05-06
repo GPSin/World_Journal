@@ -1,3 +1,4 @@
+
 import {
   MapContainer, TileLayer, Marker, useMapEvents, Tooltip
 } from 'react-leaflet';
@@ -170,9 +171,8 @@ export default function MapPage() {
             <br />
             <br />
             Right-click on a waypoint to delete it.
-          </div>
-
-          <div className={styles.instructionBox}>
+            <br />
+            <br />
             Edit Mode: Edit Mode is a toggleable feature so don't forget to turn it off when you are done.
             <br />
             <br />
@@ -251,12 +251,12 @@ export default function MapPage() {
 
       {selectedWaypoint && (
         <div style={{
-          position: 'fixed', top: '100px', [selectedWaypoint.lng > 0 ? 'left' : 'right']: '70px', width: '220px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '15px', borderRadius: '10px', zIndex: 1000, boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
+          position: 'fixed', top: '.5%', [selectedWaypoint.lng > 0 ? 'left' : 'right']: '.5%', width: '14%', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '15px', borderRadius: '10px', zIndex: 1000, boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
           {selectedWaypoint.imageUrl && (
             <img
               src={getFullImageUrl(selectedWaypoint.imageUrl)}
               alt="Waypoint"
-              style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em', objectFit: 'cover'}}
+              style={{ maxWidth: '90%', borderRadius: '8px', marginBottom: '0.5em', objectFit: 'cover'}}
             />
           )}
           {selectedWaypoint.title && (
@@ -285,7 +285,7 @@ export default function MapPage() {
       )}
 
       {showModal && (
-        <div className={styles.modal} style={{ position: 'fixed', top: '10vh', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+        <div className={styles.modal} style={{ position: 'fixed', top: '3vh', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
           <h3>{editingWaypoint ? 'Edit Waypoint' : 'Add New Waypoint'}</h3>
           <form onSubmit={handleFormSubmit} style={{ width: '100%' }}>
             <input
@@ -304,7 +304,7 @@ export default function MapPage() {
                 <img
                   src={previewUrl}
                   alt="Selected"
-                  style={{maxWidth: '300px', maxHeight: '350px', borderRadius: '12px', marginBottom: '1em', marginTop: '1em'}}
+                  style={{maxWidth: '37%', maxHeight: '37%px', borderRadius: '12px', marginBottom: '1em', marginTop: '1em'}}
                 />
               </div>
             )}
