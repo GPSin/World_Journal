@@ -15,7 +15,7 @@
   background: #FBEAEB;
   padding: 2.5rem;
   border-radius: 16px;
-  width: 95vw;
+  width: 95%;
   max-width: 600px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s ease-out;
@@ -23,7 +23,6 @@
   flex-direction: column;
   gap: 1.2rem;
   align-items: center;
-  box-sizing: border-box;
 }
 
 .modal h3 {
@@ -49,15 +48,21 @@
   min-height: 100px;
 }
 
+.modalButtons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
 .modal button {
-  flex: 1 1 0;
+  width: 48%;
   padding: 0.75rem;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s ease-in-out;
-  min-width: 0;
 }
 
 .modal .submit,
@@ -84,25 +89,31 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   min-width: 160px;
   text-align: center;
-  font-size: 1rem;
-  transition: background 0.2s;
 }
 
 .fixedButton:hover {
   background-color: #0056b3;
 }
 
-.editButtonFixed { bottom: 104px; }
-.hideInstructionsButton { bottom: 62px; }
-.viewButtonFixed { bottom: 20px; }
+.editButtonFixed {
+  bottom: 104px;
+}
+
+.hideInstructionsButton {
+  bottom: 62px;
+}
+
+.viewButtonFixed {
+  bottom: 20px;
+}
 
 .instructionsContainer {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  top: 720px;
+  right: 70px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
   z-index: 1000;
 }
 
@@ -117,174 +128,7 @@
   text-align: center;
 } 
 
-/* --- Map Tooltip --- */
-.custom-tooltip {
-  width: min(150px, 90vw) !important;
-  background-color: #2F3C7E !important;
-  color: #FBEAEB !important;
-  padding: 10px !important;
-  border-radius: 10px !important;
-  font-size: clamp(1rem, 2vw, 1.2em) !important;
-  text-align: center;
-}
 
-.tooltip-image {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 0.5em;
-  object-fit: cover;
-}
-
-.tooltip-title {
-  margin: 0.5em 0 0.2em;
-  word-wrap: break-word;
-}
-
-/* --- Selected Waypoint Panel --- */
-.waypoint-panel {
-  position: fixed;
-  top: 100px;
-  width: clamp(220px, 30vw, 300px);
-  background-color: #2F3C7E;
-  color: #FBEAEB;
-  padding: 15px;
-  border-radius: 10px;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.left-panel {
-  left: 70px;
-}
-
-.right-panel {
-  right: 70px;
-}
-
-.panel-image {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 0.5em;
-  object-fit: cover;
-}
-
-.panel-title {
-  margin: 0.5em 0 0.2em;
-}
-
-.panel-description {
-  margin: 0 0 0.5em;
-}
-
-.panel-link {
-  color: #FBEAEB;
-  text-decoration: underline;
-  margin-top: 10px;
-}
-
-.panel-close-button {
-  margin-top: 15px;
-  background-color: #FBEAEB;
-  color: #2F3C7E;
-  border: none;
-  border-radius: 5px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s ease;
-}
-
-.panel-close-button:hover {
-  background-color: #dcdcdc;
-}
-
-/* --- Modal --- */
-.modal {
-  position: fixed;
-  top: 5vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(90vw, 600px);
-  background-color: #FBEAEB;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  align-items: center;
-  animation: fadeIn 0.3s ease-out;
-  box-sizing: border-box;
-}
-
-.modal-form {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.modal-input,
-.modal-textarea,
-.modal-file-input {
-  width: 100%;
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #FBEAEB;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.modal-textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.modal-image-preview-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.modal-image-preview {
-  max-width: 300px;
-  max-height: 350px;
-  border-radius: 12px;
-  margin-bottom: 1em;
-  margin-top: 1em;
-  object-fit: cover;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.modal-submit,
-.modal-cancel {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  background-color: #2F3C7E;
-  color: #FBEAEB;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.modal-submit:hover,
-.modal-cancel:hover {
-  background-color: #0056b3;
-}
-
-/* --- Animations --- */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -293,119 +137,5 @@
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-/* --- Responsive Media Queries --- */
-@media (max-width: 900px) {
-  .modal {
-    max-width: 90vw;
-    padding: 2rem;
-  }
-
-  .instructionsContainer {
-    right: 10px;
-    bottom: 10px;
-  }
-  .waypoint-panel {
-    width: 80vw;
-    top: auto;
-    bottom: 20px;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%);
-  }
-
-}
-
-@media (max-width: 600px) {
-  .modal {
-    width: 100vw;
-    max-width: 100vw;
-    padding: 1.2rem;
-    border-radius: 8px;
-    gap: 0.8rem;
-  }
-  .modal h3 {
-    font-size: 1.15rem;
-  }
-  
-  .modal button {
-    width: 100%;
-    font-size: 0.95rem;
-  }
-  .fixedButton {
-    left: 10px;
-    min-width: 120px;
-    font-size: 0.95rem;
-    padding: 10px 10px;
-  }
-  .editButtonFixed { bottom: 84px; }
-  .hideInstructionsButton { bottom: 52px; }
-  .viewButtonFixed { bottom: 20px; }
-  .instructionsContainer {
-    right: 5px;
-    bottom: 5px;
-    width: 95vw;
-    align-items: flex-end;
-  }
-  .instructionBox {
-    width: 90vw;
-    font-size: 13px;
-    padding: 8px 10px;
-  }
-
-  .instructionsContainer {
-    width: 120vw;
-    right: 8px;
-    bottom: 8px;
-  }
-
-  .modal-submit,
-  .modal-cancel {
-    width: 100%;
-  }
-
-  .custom-tooltip {
-    font-size: 1rem !important;
-    width: 90vw !important;
-  }
-
-  .tooltip-image {
-    max-height: 150px;
-  }
-
-  .panel-close-button {
-    padding: 10px;
-  }
-}
-
-@media (max-width: 400px) {
-  .modal {
-    padding: 0.7rem;
-    gap: 0.5rem;
-    width: 95vw;
-  }
-  .modal h3 {
-    font-size: 1rem;
-  }
-  .instructionBox {
-    font-size: 12px;
-    padding: 6px 6px;
-  }
-
-  .instructionsContainer {
-    width: 90vw;
-    right: 5px;
-    bottom: 5px;
-  }
-  
-  .modal-input,
-  .modal-textarea {
-    font-size: 0.9rem;
-  }
-
-  .custom-tooltip {
-    font-size: 0.9rem !important;
   }
 }

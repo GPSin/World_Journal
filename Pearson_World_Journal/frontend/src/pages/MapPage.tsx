@@ -196,7 +196,7 @@ export default function MapPage() {
       <MapContainer
         center={center}
         zoom={2}
-        style={{ height: '100vh', width: '100vw' }}
+        style={{ height: '100vh' }}
         worldCopyJump={false}
         maxBounds={[[-90, -180], [90, 180]]}
         maxBoundsViscosity={1.0}
@@ -232,16 +232,16 @@ export default function MapPage() {
                 dragend: e => handleMarkerDragEnd(e, wp),
               }}
             >
-              <Tooltip direction={getDirection(wp.lat)} offset={getDirection(wp.lat) === 'bottom' ? [0, 0] : [0, -30]}  opacity={1} permanent={false} className="custom-tooltip">
-                <div>
+              <Tooltip direction={getDirection(wp.lat)} offset={getDirection(wp.lat) === 'bottom' ? [0, 0] : [0, -30]}  opacity={1} permanent={false}>
+                <div style={{width: '150px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '10px', borderRadius: '10px', fontSize: '1.2em', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal', overflow: 'hidden', textAlign: 'center'}}>
                   {wp.imageUrl && (
                     <img
                       src={wp.imageUrl}
                       alt="Preview"
-                      className="tooltip-image"
+                      style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em' }}
                     />
                   )}
-                  {wp.title && <h4 className="tooltip-title">{wp.title}</h4>}
+                  {wp.title && <h4 style={{ margin: '0.5em 0 0.2em', wordWrap: 'break-word' }}>{wp.title}</h4>}
                 </div>
               </Tooltip>
             </Marker>
@@ -250,35 +250,34 @@ export default function MapPage() {
       </MapContainer>
 
       {selectedWaypoint && (
-        <div
-          className={`waypoint-panel ${
-            selectedWaypoint.lng > 0 ? 'left-panel' : 'right-panel'
-          }`}
-        >
+        <div style={{
+          position: 'fixed', top: '100px', [selectedWaypoint.lng > 0 ? 'left' : 'right']: '70px', width: '220px', backgroundColor: '#2F3C7E', color: '#FBEAEB', padding: '15px', borderRadius: '10px', zIndex: 1000, boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'}}>
           {selectedWaypoint.imageUrl && (
             <img
               src={getFullImageUrl(selectedWaypoint.imageUrl)}
               alt="Waypoint"
-              className="panel-image"
+              style={{ width: '100%', borderRadius: '8px', marginBottom: '0.5em', objectFit: 'cover'}}
             />
           )}
           {selectedWaypoint.title && (
-            <h4 className="panel-title">{selectedWaypoint.title}</h4>
+            <h4 style={{ margin: '0.5em 0 0.2em' }}>
+              {selectedWaypoint.title}
+            </h4>
           )}
           {selectedWaypoint.description && (
-            <p className="panel-description">{selectedWaypoint.description}</p>
+            <p style={{ margin: '0 0 0.5em' }}>
+              {selectedWaypoint.description}
+            </p>
           )}
           <a
             href={`/journal/${selectedWaypoint.id}`}
-            className="panel-link"
-            target="_blank"
-            rel="noopener noreferrer"
+            style={{ color: '#FBEAEB', textDecoration: 'underline', marginTop: '10px'}}
           >
             View Journal
           </a>
           <button 
             onClick={() => setSelectedWaypoint(null)} 
-            className="panel-close-button"
+            style={{marginTop: '15px', backgroundColor: '#FBEAEB', color: '#2F3C7E', border: 'none', borderRadius: '5px', padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold'}}
           >
             Close
           </button>
@@ -286,28 +285,26 @@ export default function MapPage() {
       )}
 
       {showModal && (
-        <div className="modal">
+        <div className={styles.modal} style={{ position: 'fixed', top: '10vh', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
           <h3>{editingWaypoint ? 'Edit Waypoint' : 'Add New Waypoint'}</h3>
-          <form onSubmit={handleFormSubmit} className="modal-form">
+          <form onSubmit={handleFormSubmit} style={{ width: '100%' }}>
             <input
               type="text"
               placeholder="Title"
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
-              className="modal-input"
             />
             <textarea
               placeholder="Description"
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
-              className="modal-textarea"
             />
             {previewUrl && (
               <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <img
                   src={previewUrl}
                   alt="Selected"
-                  className="modal-image-preview"
+                  style={{maxWidth: '300px', maxHeight: '350px', borderRadius: '12px', marginBottom: '1em', marginTop: '1em'}}
                 />
               </div>
             )}
@@ -325,19 +322,18 @@ export default function MapPage() {
                   setPreviewUrl(null);
                 }
               }}
-              className="modal-file-input"
             />
-          <div className="modal-buttons">
+          <div className={styles.modalButtons}>
             <button
+              className={styles.submit}
               type="submit"
-              className="modal-submit"
               onClick={() => setPreviewUrl(null)}
             >
               {editingWaypoint ? 'Update' : 'Add'} Waypoint
             </button>
             <button
+              className={styles.cancel}
               type="button"
-              className="modal-cancel"
               onClick={() => {setShowModal(false); setEditingWaypoint(null); setNewWaypoint(null); setFormData({ title: '', description: '', imageFile: null }); setPreviewUrl(null);}}
           >
               Cancel</button>

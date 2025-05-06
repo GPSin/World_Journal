@@ -34,7 +34,3 @@
 .leaflet-popup-close-button:hover {
     color: #ffffff !important; 
 }
-
-*, *::before, *::after {
-    box-sizing: border-box;
-  }
